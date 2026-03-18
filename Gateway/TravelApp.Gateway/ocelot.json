@@ -11,6 +11,9 @@
       ],
       "UpstreamPathTemplate": "/api/auth/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
+    },
+    {
+      "DownstreamHostAndPorts":"api/booking"
     }
   ],
   "GlobalConfiguration": {
