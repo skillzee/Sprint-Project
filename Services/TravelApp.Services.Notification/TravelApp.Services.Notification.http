@@ -1,0 +1,6 @@
+@TravelApp.Services.Notification_HostAddress = http://localhost:5237
+
+GET {{TravelApp.Services.Notification_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

@@ -1,0 +1,16 @@
+<Solution>
+  <Folder Name="/Gateway/">
+    <Project Path="Gateway/TravelApp.Gateway/TravelApp.Gateway.csproj" />
+  </Folder>
+  <Folder Name="/Services/">
+    <Project Path="Services/TravelApp.Services.Auth/TravelApp.Services.Auth.csproj" />
+    <Project Path="Services/TravelApp.Services.Booking/TravelApp.Services.Booking.csproj" />
+    <Project Path="Services/TravelApp.Services.Flight/TravelApp.Services.Flight.csproj" />
+    <Project Path="Services/TravelApp.Services.Hotel/TravelApp.Services.Hotel.csproj" />
+    <Project Path="Services/TravelApp.Services.Notification/TravelApp.Services.Notification.csproj" />
+    <Project Path="Services/TravelApp.Services.Payment/TravelApp.Services.Payment.csproj" />
+  </Folder>
+  <Folder Name="/Shared/">
+    <Project Path="Shared/TravelApp.Shared/TravelApp.Shared.csproj" />
+  </Folder>
+</Solution>
