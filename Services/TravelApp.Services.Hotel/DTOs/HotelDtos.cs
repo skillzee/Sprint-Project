@@ -1,23 +1,24 @@
 ﻿namespace TravelApp.Services.Hotel.DTOs
 {
     public record HotelDto(
-        int Id,
-        int Name,
-        string City,
-        string Address,
-        string Description,
-        double Rating,
-        string ImageUrl
-    );
+     int Id,
+     string Name,
+     string City,
+     string Address,
+     string Description,
+     double StarRating,
+     string Amenities,
+     List<RoomDto> Rooms
+ );
 
     public record RoomDto(
         int Id,
         int HotelId,
-        string HotelName,
-        string RoomType,
+        string Type,
         decimal PricePerNight,
-        int Capacity,
-        bool IsAvailable
+        int MaxOccupancy,
+        bool IsAvailable,
+        string Description
     );
 
 
@@ -26,16 +27,16 @@
         string City,
         string Address,
         string Description,
-        double Rating,
-        string ImageUrl
+        double StarRating,
+        string Amenities
     );
 
 
     public record CreateRoomDto(
         int HotelId,
-        string RoomType,
+        string Type,
         decimal PricePerNight,
-        int Capacity,
-        bool IsAvailable
+        int MaxOccupancy,
+        string Description
     );
 }
