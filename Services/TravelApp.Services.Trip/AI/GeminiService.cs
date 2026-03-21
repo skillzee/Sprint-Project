@@ -13,7 +13,7 @@ namespace TravelApp.Services.Trip.AI
     {
         public async Task<List<Itinerary>> GetItineraryAsync(string destination, DateTime startDate, DateTime endDate, string? preferences)
         {
-            var apiKey = config["Gemini:ApiKey"];
+            var apiKey = Environment.GetEnvironmentVariable("GEMINI_API_KEY");
             var totalDays = (endDate - startDate).Days +1;
 
             var prompt = BuildPrompt(destination, startDate, endDate, totalDays, preferences);
