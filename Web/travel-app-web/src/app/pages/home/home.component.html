@@ -1,1 +1,80 @@
-<p>home works!</p>
+<!-- Hero -->
+    <section class="hero">
+      <div class="hero-bg">
+        <div class="hero-grid"></div>
+      </div>
+      <div class="container hero-content">
+        <div class="hero-eyebrow">✦ Your journey, simplified</div>
+        <h1 class="hero-title">Travel Without<br>the <em>Hassle</em></h1>
+        <p class="hero-sub">Search flights, book hotels, manage every trip — all in one place. Built for explorers who value their time.</p>
+        <div class="hero-actions">
+          <a routerLink="/flights" class="btn btn-rust btn-lg">Search Flights</a>
+          <a routerLink="/hotels" class="btn btn-lg" style="background:rgba(255,255,255,0.15);color:#fdf8f0;border:1.5px solid rgba(255,255,255,0.3);">Browse Hotels</a>
+          <a routerLink="/trips" class="btn btn-lg" style="background:rgba(196,84,26,0.25);color:#fdf8f0;border:1.5px solid rgba(196,84,26,0.5);">✦ AI Trip Planner</a>
+        </div>
+        <div class="hero-stats">
+          <div class="stat"><strong>500+</strong><span>Destinations</span></div>
+          <div class="stat-sep"></div>
+          <div class="stat"><strong>50k+</strong><span>Happy Travellers</span></div>
+          <div class="stat-sep"></div>
+          <div class="stat"><strong>4.9★</strong><span>Average Rating</span></div>
+        </div>
+      </div>
+      <div class="hero-scroll-hint">scroll to explore ↓</div>
+    </section>
+
+    <!-- Features -->
+    <section class="section features-section">
+      <div class="container">
+        <div class="section-label">Why VoyageIn?</div>
+        <h2 class="section-title">Everything you need to travel smarter</h2>
+        <div class="features-grid">
+          @for(f of features; track f.title) {
+            <div class="feature-card">
+              <div class="feature-icon">{{ f.icon }}</div>
+              <h3>{{ f.title }}</h3>
+              <p>{{ f.desc }}</p>
+            </div>
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta-section">
+      <div class="container">
+        <div class="cta-box">
+          <div class="cta-text">
+            <h2>Ready to explore the world?</h2>
+            <p>Join thousands of travellers who plan their trips with VoyageIn every day.</p>
+          </div>
+          <div class="cta-actions">
+            @if(!auth.isLoggedIn()) {
+              <a routerLink="/register" class="btn btn-rust btn-lg">Create Free Account</a>
+            }
+            <a routerLink="/flights" class="btn btn-outline btn-lg">Search Flights</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="container footer-inner">
+        <div class="footer-brand">
+          <span class="brand-name">✈ VoyageIn</span>
+          <p>Your personal travel companion.</p>
+        </div>
+        <div class="footer-links">
+          <a routerLink="/flights">Flights</a>
+          <a routerLink="/hotels">Hotels</a>
+          @if(auth.isLoggedIn()) {
+            <a routerLink="/bookings">My Trips</a>
+            <a routerLink="/trips">Trip Planner</a>
+          } @else {
+            <a routerLink="/register">Register</a>
+          }
+        </div>
+        <div class="footer-copy">© 2026 VoyageIn. Built with ❤ for solo explorers.</div>
+      </div>
+    </footer>
