@@ -9,16 +9,9 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
   styleUrl: './navbar.component.css'
 })
 export class NavbarComponent {
-  scrolled = signal(false);
   menuOpen = signal(false);
 
-  constructor(public auth: AuthService){
-    if (typeof window !== 'undefined') {
-      window.addEventListener('scroll', () => {
-        this.scrolled.set(window.scrollY > 20);
-      });
-    }
-  }
+  constructor(public auth: AuthService){  }
 
   toggleMenu() { this.menuOpen.update(v => !v); }
   closeMenu() { this.menuOpen.set(false); }

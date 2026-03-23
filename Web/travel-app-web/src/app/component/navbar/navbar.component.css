@@ -5,11 +5,6 @@
       border-bottom: 1px solid transparent;
       transition: all 0.3s ease;
     }
-    .navbar.scrolled {
-      background: rgba(253, 248, 240, 0.97);
-      border-bottom-color: var(--sand-dark);
-      box-shadow: 0 2px 20px rgba(26,20,16,0.08);
-    }
     .nav-inner {
       max-width: 1200px; margin: 0 auto; padding: 0 24px;
       display: flex; align-items: center; gap: 32px; height: 68px;
