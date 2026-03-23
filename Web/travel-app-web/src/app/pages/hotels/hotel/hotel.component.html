@@ -1,0 +1,68 @@
+<div style="padding-top:68px">
+      <div class="page-hero">
+        <div class="container">
+          <h1>Find Your Stay</h1>
+          <p>Curated hotels from cozy mountain retreats to luxury city escapes</p>
+        </div>
+      </div>
+
+      <div class="search-bar-wrap">
+        <div class="container">
+          <div class="search-bar">
+            <div class="form-group" style="flex:1;min-width:200px">
+              <label class="form-label">City</label>
+              <input class="form-control" [(ngModel)]="city" placeholder="Delhi, Goa, Mumbai...">
+            </div>
+            <button class="btn btn-rust" (click)="search()">Search</button>
+            <button class="btn btn-outline btn-sm" (click)="reset()">Clear</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="section container">
+        @if(loading()) { <div class="loading"><div class="spinner"></div></div> }
+        @else if(hotels().length === 0) {
+          <div class="empty-state">
+            <div class="icon">🏨</div>
+            <h3>No hotels found</h3>
+            <p>Try a different city</p>
+          </div>
+        }
+        @else {
+          <div class="results-header">
+            <span class="results-count">{{ hotels().length }} hotel{{ hotels().length !== 1 ? 's' : '' }} available</span>
+          </div>
+          <div class="grid-2">
+            @for(h of hotels(); track h.id) {
+              <a [routerLink]="['/hotels', h.id]" class="hotel-card card fade-up">
+                <div class="hotel-img-placeholder">
+                  <span class="hotel-city-tag">{{ h.city }}</span>
+                  <div class="hotel-illustration">🏛</div>
+                </div>
+                <div class="card-body">
+                  <div class="hotel-header">
+                    <h3 class="hotel-name">{{ h.name }}</h3>
+                    <div class="hotel-stars stars">
+                      @for(s of getStars(h.starRating); track s) { ★ }
+                    </div>
+                  </div>
+                  <p class="hotel-address">📍 {{ h.address }}</p>
+                  <p class="hotel-desc">{{ h.description }}</p>
+                  <div class="hotel-amenities">
+                    @for(a of getAmenities(h.amenities); track a) {
+                      <span class="amenity-tag">{{ a }}</span>
+                    }
+                  </div>
+                  <div class="hotel-footer">
+                    <div class="room-count">{{ h.rooms.length }} room type{{ h.rooms.length !== 1 ? 's' : '' }}</div>
+                    <div class="from-price">
+                      From <strong>₹{{ getMinPrice(h) | number }}</strong>/night
+                    </div>
+                  </div>
+                </div>
+              </a>
+            }
+          </div>
+        }
+      </div>
+    </div>

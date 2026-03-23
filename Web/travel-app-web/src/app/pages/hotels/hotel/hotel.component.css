@@ -1,0 +1,126 @@
+ .search-bar-wrap {
+     background: var(--white);
+     border-bottom: 1px solid var(--sand-dark);
+     padding: 24px 0;
+ }
+
+ .search-bar {
+     display: flex;
+     gap: 16px;
+     align-items: flex-end;
+     flex-wrap: wrap;
+ }
+
+ .results-header {
+     margin-bottom: 24px;
+ }
+
+ .results-count {
+     font-family: var(--font-display);
+     font-size: 1.1rem;
+     font-weight: 600;
+     color: var(--ink-soft);
+ }
+
+ .hotel-card {
+     display: block;
+     color: var(--ink);
+     cursor: pointer;
+ }
+
+ .hotel-img-placeholder {
+     height: 180px;
+     background: linear-gradient(135deg, var(--sand) 0%, var(--sand-dark) 100%);
+     position: relative;
+     display: flex;
+     align-items: center;
+     justify-content: center;
+ }
+
+ .hotel-illustration {
+     font-size: 3.5rem;
+     opacity: 0.4;
+ }
+
+ .hotel-city-tag {
+     position: absolute;
+     top: 14px;
+     left: 14px;
+     background: var(--ink);
+     color: var(--cream);
+     font-size: 0.75rem;
+     font-weight: 600;
+     padding: 4px 10px;
+     border-radius: 100px;
+     letter-spacing: 0.04em;
+ }
+
+ .hotel-header {
+     display: flex;
+     justify-content: space-between;
+     align-items: flex-start;
+     margin-bottom: 8px;
+ }
+
+ .hotel-name {
+     font-family: var(--font-display);
+     font-size: 1.15rem;
+     font-weight: 700;
+ }
+
+ .hotel-stars {
+     font-size: 0.85rem;
+ }
+
+ .hotel-address {
+     font-size: 0.82rem;
+     color: var(--gray);
+     margin-bottom: 8px;
+ }
+
+ .hotel-desc {
+     font-size: 0.88rem;
+     color: var(--ink-soft);
+     margin-bottom: 14px;
+     line-height: 1.5;
+ }
+
+ .hotel-amenities {
+     display: flex;
+     flex-wrap: wrap;
+     gap: 6px;
+     margin-bottom: 16px;
+ }
+
+ .amenity-tag {
+     background: var(--sand);
+     color: var(--ink-soft);
+     font-size: 0.72rem;
+     padding: 3px 8px;
+     border-radius: 4px;
+     font-weight: 500;
+ }
+
+ .hotel-footer {
+     display: flex;
+     justify-content: space-between;
+     align-items: center;
+     border-top: 1px solid var(--sand-dark);
+     padding-top: 14px;
+ }
+
+ .room-count {
+     font-size: 0.82rem;
+     color: var(--gray);
+ }
+
+ .from-price {
+     font-size: 0.9rem;
+     color: var(--ink-soft);
+ }
+
+ .from-price strong {
+     color: var(--rust);
+     font-family: var(--font-display);
+     font-size: 1.1rem;
+ }

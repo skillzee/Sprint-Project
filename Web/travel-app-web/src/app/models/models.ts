@@ -32,3 +32,25 @@ export interface Airport {
   city: string; 
   country: string;
 }
+
+
+export interface Hotel {
+  id: number;
+  name: string; 
+  city: string; 
+  address: string;
+  description: string; 
+  starRating: number; 
+  amenities: string; 
+  rooms: Room[];
+}
+
+export interface Room {
+  id: number; 
+  hotelId: number; 
+  type: string;
+  pricePerNight: number; 
+  isAvailable: boolean;
+  maxOccupancy: number; 
+  description: string;
+}
