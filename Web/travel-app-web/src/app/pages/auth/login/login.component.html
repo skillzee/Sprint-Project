@@ -1,1 +1,32 @@
-<p>login works!</p>
+<div class="auth-page">
+      <div class="auth-card">
+        <div class="auth-brand">✈ VoyageIn</div>
+        <h2>Welcome back</h2>
+        <p class="auth-sub">Sign in to manage your trips</p>
+
+        @if(error()) { <div class="alert alert-error">{{ error() }}</div> }
+
+        <form (ngSubmit)="login()">
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input class="form-control" type="email" [(ngModel)]="email" name="email" placeholder="you@example.com" required>
+          </div>
+          <div class="form-group" style="margin-top:16px">
+            <label class="form-label">Password</label>
+            <input class="form-control" type="password" [(ngModel)]="password" name="password" placeholder="••••••••" required>
+          </div>
+          <button class="btn btn-rust btn-lg auth-submit" type="submit" [disabled]="loading()">
+            {{ loading() ? 'Signing in...' : 'Sign In' }}
+          </button>
+        </form>
+
+        <p class="auth-footer">No account? <a routerLink="/register">Join free →</a></p>
+      </div>
+
+      <div class="auth-visual">
+        <div class="visual-content">
+          <div class="quote">"The world is a book, and those who do not travel read only one page."</div>
+          <div class="quote-author">— Saint Augustine</div>
+        </div>
+      </div>
+    </div>
