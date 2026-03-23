@@ -30,6 +30,12 @@ export class AuthService {
     return this.http.post(`${this.api}/login`, {email, password}).pipe(tap(user => this.setUser(user)));
   }
 
+  logout(){
+    localStorage.removeItem('travel_user');
+    this.currentUser.set(null);
+    this.router.navigate(['/login']);
+  }
+
 
 
   isLoggedIn(){
@@ -37,6 +43,9 @@ export class AuthService {
   }
   getToken() { 
     return this.currentUser()?.token; 
+  }
+  isAdmin(){
+    return this.currentUser()?.role === 'Admin';
   }
 
 

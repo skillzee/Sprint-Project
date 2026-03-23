@@ -1,1 +1,35 @@
-<p>navbar works!</p>
+<nav class="navbar" [class.scrolled]="scrolled()">
+      <div class="nav-inner">
+        <a routerLink="/" class="brand">
+          <span class="brand-icon">✈</span>
+          <span class="brand-name">VoyageIn</span>
+        </a>
+
+        <div class="nav-links" [class.open]="menuOpen()">
+          <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}" (click)="closeMenu()">Home</a>
+          <a routerLink="/flights" routerLinkActive="active" (click)="closeMenu()">Flights</a>
+          <a routerLink="/hotels" routerLinkActive="active" (click)="closeMenu()">Hotels</a>
+          @if(auth.isLoggedIn()) {
+            <a routerLink="/bookings" routerLinkActive="active" (click)="closeMenu()">My Trips</a>
+            <a routerLink="/trips" routerLinkActive="active" (click)="closeMenu()">Trip Planner</a>
+            @if(auth.isAdmin()) {
+              <a routerLink="/dashboard" routerLinkActive="active" (click)="closeMenu()">Dashboard</a>
+            }
+          }
+        </div>
+
+        <div class="nav-actions">
+          @if(auth.isLoggedIn()) {
+            <span class="user-greeting">Hey, {{ (auth.currentUser()?.name ?? '').split(' ')[0] }} 👋</span>
+            <button class="btn btn-outline btn-sm" (click)="auth.logout()">Sign Out</button>
+          } @else {
+            <a routerLink="/login" class="btn btn-outline btn-sm">Sign In</a>
+            <a routerLink="/register" class="btn btn-primary btn-sm">Join Free</a>
+          }
+        </div>
+
+        <button class="hamburger" (click)="toggleMenu()" [class.open]="menuOpen()">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </nav>
