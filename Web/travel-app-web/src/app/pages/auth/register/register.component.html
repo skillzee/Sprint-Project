@@ -1,1 +1,41 @@
-<p>register works!</p>
+<div class="auth-page">
+      <div class="auth-card">
+        <div class="auth-brand">✈ VoyageIn</div>
+        <h2>Create account</h2>
+        <p class="auth-sub">Start exploring the world today</p>
+
+        @if(error()) { <div class="alert alert-error">{{ error() }}</div> }
+        @if(success()) { <div class="alert alert-success">{{ success() }}</div> }
+
+        <form (ngSubmit)="register()">
+          <div class="form-group">
+            <label class="form-label">Full Name</label>
+            <input class="form-control" type="text" [(ngModel)]="name" name="name" placeholder="Arjun Sharma" required>
+          </div>
+          <div class="form-group" style="margin-top:16px">
+            <label class="form-label">Email</label>
+            <input class="form-control" type="email" [(ngModel)]="email" name="email" placeholder="you@example.com" required>
+          </div>
+          <div class="form-group" style="margin-top:16px">
+            <label class="form-label">Password</label>
+            <input class="form-control" type="password" [(ngModel)]="password" name="password" placeholder="••••••••" required>
+          </div>
+          <button class="btn btn-rust btn-lg auth-submit" type="submit" [disabled]="loading()">
+            {{ loading() ? 'Creating account...' : 'Join VoyageIn' }}
+          </button>
+        </form>
+
+        <p class="auth-footer">Already have an account? <a routerLink="/login">Sign in →</a></p>
+      </div>
+
+      <div class="auth-visual">
+        <div class="visual-content">
+          <div class="tagline">Start your<br><em>adventure</em><br>today.</div>
+          <div class="perks">
+            <div class="perk">✓ Free to join</div>
+            <div class="perk">✓ Instant booking confirmations</div>
+            <div class="perk">✓ Manage all trips in one place</div>
+          </div>
+        </div>
+      </div>
+    </div>
