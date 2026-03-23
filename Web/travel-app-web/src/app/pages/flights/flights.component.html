@@ -1,1 +1,182 @@
-<p>flights works!</p>
+<div style="padding-top:68px">
+      <div class="page-hero">
+        <div class="container">
+          <h1>Find Your Flight</h1>
+          <p> Book securely on Google Flights</p>
+        </div>
+      </div>
+
+      <!-- Search bar -->
+      <div class="search-bar-wrap">
+        <div class="container">
+          <div class="search-bar">
+            <div class="form-group">
+              <label class="form-label">From</label>
+              <select class="form-control" [(ngModel)]="origin">
+                <option value="">Select origin</option>
+                @for(a of airports(); track a.code) {
+                  <option [value]="a.code">{{ a.city }} ({{ a.code }})</option>
+                }
+              </select>
+            </div>
+
+            <button class="swap-btn" (click)="swap()" title="Swap airports">⇄</button>
+
+            <div class="form-group">
+              <label class="form-label">To</label>
+              <select class="form-control" [(ngModel)]="destination">
+                <option value="">Select destination</option>
+                @for(a of airports(); track a.code) {
+                  <option [value]="a.code">{{ a.city }} ({{ a.code }})</option>
+                }
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Date</label>
+              <input class="form-control" type="date" [(ngModel)]="date" [min]="today">
+            </div>
+
+            <div class="form-group" style="max-width:90px">
+              <label class="form-label">Adults</label>
+              <select class="form-control" [(ngModel)]="adults">
+                <option [value]="1">1</option>
+                <option [value]="2">2</option>
+                <option [value]="3">3</option>
+                <option [value]="4">4</option>
+              </select>
+            </div>
+
+            <div class="form-group" style="max-width:130px">
+              <label class="form-label">Class</label>
+              <select class="form-control" [(ngModel)]="cabin">
+                <option value="ECONOMY">Economy</option>
+                <option value="PREMIUM_ECONOMY">Prem. Economy</option>
+                <option value="BUSINESS">Business</option>
+                <option value="FIRST">First</option>
+              </select>
+            </div>
+
+            <button class="btn btn-rust" (click)="search()" [disabled]="!origin || !destination || !date || loading()">
+              {{ loading() ? '...' : 'Search' }}
+            </button>
+          </div>
+
+          @if(searchError()) {
+            <p class="search-hint">⚠ {{ searchError() }}</p>
+          }
+        </div>
+      </div>
+
+      <!-- Results -->
+      <div class="section container">
+        @if(loading()) {
+          <div class="loading-state">
+            <div class="spinner"></div>
+            <p>Searching live...</p>
+          </div>
+        }
+        @else if(!hasSearched()) {
+          <div class="prompt-state">
+            <div class="prompt-icon">✈️</div>
+            <h3>Select origin, destination & date to search</h3>
+            <p>We'll pull real-time prices for you</p>
+          </div>
+        }
+        @else if(flights().length === 0) {
+          <div class="empty-state">
+            <div class="icon">🔍</div>
+            <h3>No flights found</h3>
+            <p>Try different dates or airports</p>
+          </div>
+        }
+        @else {
+          <div class="results-header">
+            <div class="results-count">
+              <strong>{{ flights().length }}</strong> flight{{ flights().length !== 1 ? 's' : '' }} found
+              <span class="route-display">{{ originName() }} → {{ destinationName() }}</span>
+            </div>
+            <div class="amadeus-badge">
+              <span>Powered by</span>
+              <strong>SerpApi</strong>
+            </div>
+          </div>
+
+          <div class="flights-list">
+            @for(f of flights(); track f.id) {
+              <div class="flight-card fade-up">
+
+                <!-- Airline row -->
+                <div class="flight-top">
+                  <div class="airline-info">
+                    <div class="airline-logo">{{ f.airlineCode }}</div>
+                    <div>
+                      <div class="airline-name">{{ f.airline }}</div>
+                      <div class="flight-meta-row">
+                        <span class="flight-num">{{ f.flightNumber }}</span>
+                        <span class="dot">·</span>
+                        <span class="cabin-badge" [class]="cabinClass(f.cabinClass)">{{ f.cabinClass }}</span>
+                        @if(f.isNonStop) {
+                          <span class="dot">·</span>
+                          <span class="nonstop-badge">Non-stop</span>
+                        }
+                      </div>
+                    </div>
+                  </div>
+                  <div class="price-col">
+                    <div class="price">₹{{ f.price | number:'1.0-0' }}</div>
+                    <div class="price-note">per person · {{ f.currency }}</div>
+                  </div>
+                </div>
+
+                <!-- Route row -->
+                <div class="flight-route">
+                  <div class="route-point">
+                    <div class="iata">{{ f.originIata }}</div>
+                    <div class="city-name">{{ f.origin }}</div>
+                    <div class="time">{{ f.departureTime | date:'HH:mm' }}</div>
+                    <div class="route-date">{{ f.departureTime | date:'EEE, d MMM' }}</div>
+                  </div>
+
+                  <div class="route-middle">
+                    <div class="duration">{{ formatDuration(f.duration) }}</div>
+                    <div class="route-line">
+                      <div class="line-seg"></div>
+                      <span class="plane-dot">✈</span>
+                      <div class="line-seg"></div>
+                    </div>
+                    <div class="stops-label">{{ f.isNonStop ? 'Direct' : 'With stops' }}</div>
+                  </div>
+
+                  <div class="route-point right">
+                    <div class="iata">{{ f.destinationIata }}</div>
+                    <div class="city-name">{{ f.destination }}</div>
+                    <div class="time">{{ f.arrivalTime | date:'HH:mm' }}</div>
+                    <div class="route-date">{{ f.arrivalTime | date:'EEE, d MMM' }}</div>
+                  </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="flight-footer">
+                  <div class="seats-left">
+                    @if(f.seatsAvailable <= 5) {
+                      <span class="urgent">🔥 Only {{ f.seatsAvailable }} seats left!</span>
+                    } @else {
+                      <span>{{ f.seatsAvailable }} seats available</span>
+                    }
+                  </div>
+                  <a [href]="f.bookingUrl" target="_blank" rel="noopener" class="btn btn-book">
+                    Book on Google Flights ↗
+                  </a>
+                </div>
+
+              </div>
+            }
+          </div>
+
+          <p class="disclaimer">
+            Clicking "Book" takes you to Google Flights for secure checkout.
+          </p>
+        }
+      </div>
+    </div>
