@@ -108,3 +108,35 @@ export interface CreateBookingDto {
   checkOutDate: string; 
   pricePerNight: number;
 }
+
+
+
+
+export interface Itinerary {
+  id: number;
+  tripId: number;
+  dayNumber: number;
+  activity: string;
+  location: string;
+}
+
+export interface Trip {
+  id: number;
+  userId: number;
+  destination: string;
+  startDate: string;
+  endDate: string;
+  createdAt: string;
+  itineraries: Itinerary[];
+}
+
+export interface CreateTripDto {
+  destination: string;
+  startDate: string;
+  endDate: string;
+}
+
+export interface GenerateItineraryDto {
+  tripId: number;
+  preferences?: string;
+}

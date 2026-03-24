@@ -1,1 +1,165 @@
-<p>trips works!</p>
+<div style="padding-top:68px">
+
+      <!-- Page Hero -->
+      <div class="page-hero">
+        <div class="container">
+          <div class="hero-eyebrow">✦ AI-Powered Planning</div>
+          <h1>Trip Planner</h1>
+          <p>Create a trip and let Gemini AI build your perfect day-by-day itinerary</p>
+        </div>
+      </div>
+
+      <div class="section container">
+        <div class="planner-layout">
+
+          <!-- LEFT: Create trip + trip list -->
+          <aside class="trips-sidebar">
+            <button class="btn btn-rust btn-block" (click)="toggleForm()">
+              {{ showForm() ? '✕ Cancel' : '+ New Trip' }}
+            </button>
+
+            <!-- Create form -->
+            @if(showForm()) {
+              <div class="create-form card fade-up">
+                <h3>Plan a New Trip</h3>
+
+                <div class="form-group">
+                  <label>Destination</label>
+                  <input class="form-control" [(ngModel)]="form.destination"
+                         placeholder="e.g. Goa, Paris, Tokyo" />
+                </div>
+
+                <div class="form-group" style="margin-top:12px">
+                  <label>Start Date</label>
+                  <input class="form-control" type="date" [(ngModel)]="form.startDate" />
+                </div>
+                <div class="form-group">
+                  <label>End Date</label>
+                  <input class="form-control" type="date" [(ngModel)]="form.endDate" />
+                </div>
+
+                @if(formError()) {
+                  <div class="error-msg">{{ formError() }}</div>
+                }
+
+                <button class="btn btn-rust btn-block" (click)="createTrip()" [disabled]="isCreating()">
+                  {{ isCreating() ? 'Creating...' : 'Create Trip' }}
+                </button>
+              </div>
+            }
+
+            <!-- Trip list -->
+            <div class="trips-list">
+              @if(loadingTrips()) {
+                <div class="loading"><div class="spinner"></div></div>
+              } @else if(trips().length === 0) {
+                <div class="empty-hint">
+                  <span>🗺️</span>
+                  <p>No trips yet. Create one to get started!</p>
+                </div>
+              } @else {
+                @for(trip of trips(); track trip.id) {
+                  <div class="trip-item" [class.active]="selectedTrip()?.id === trip.id"
+                       (click)="selectTrip(trip)">
+                    <div class="trip-item-dest">{{ trip.destination }}</div>
+                    <div class="trip-item-dates">
+                      {{ trip.startDate | date:'d MMM' }} – {{ trip.endDate | date:'d MMM yyyy' }}
+                    </div>
+                    <div class="trip-item-meta">
+                      <span class="days-badge">{{ getDays(trip) }} days</span>
+                      @if(trip.itineraries.length > 0) {
+                        <span class="ai-badge">✦ AI Ready</span>
+                      }
+                    </div>
+                    <button class="delete-btn" (click)="deleteTrip(trip.id, $event)" title="Delete">✕</button>
+                  </div>
+                }
+              }
+            </div>
+          </aside>
+
+          <!-- RIGHT: Itinerary panel -->
+          <main class="itinerary-panel">
+            @if(!selectedTrip()) {
+              <div class="no-selection">
+                <div class="no-sel-icon">🌍</div>
+                <h3>Select a trip to view its itinerary</h3>
+                <p>Or create a new trip and generate an AI-powered plan in seconds.</p>
+              </div>
+            } @else {
+              <div class="itin-header">
+                <div>
+                  <h2>{{ selectedTrip()!.destination }}</h2>
+                  <div class="itin-meta">
+                    📅 {{ selectedTrip()!.startDate | date:'d MMM yyyy' }}
+                    &rarr; {{ selectedTrip()!.endDate | date:'d MMM yyyy' }}
+                    &nbsp;·&nbsp; {{ getDays(selectedTrip()!) }} days
+                  </div>
+                </div>
+
+                <div class="itin-actions">
+                  @if(selectedTrip()!.itineraries.length === 0) {
+                    <div class="pref-row">
+                      <input class="form-control form-control-sm" [(ngModel)]="preferences"
+                             placeholder="Preferences (e.g. adventure, vegetarian food)" />
+                    </div>
+                  }
+                  <button class="btn btn-rust" (click)="generateItinerary()" [disabled]="isGenerating()">
+                    {{ isGenerating() ? '⏳ Generating...' : '✦ Generate with AI' }}
+                  </button>
+                </div>
+              </div>
+
+              @if(generateError()) {
+                <div class="error-msg" style="margin-bottom:16px">{{ generateError() }}</div>
+              }
+
+              <!-- Itinerary days -->
+              @if(isGenerating()) {
+                <div class="generating-state">
+                  <div class="spinner large"></div>
+                  <p>Gemini AI is crafting your itinerary…</p>
+                </div>
+              } @else if(selectedTrip()!.itineraries.length === 0) {
+                <div class="empty-itin">
+                  <div class="empty-itin-icon">✨</div>
+                  <h3>No itinerary yet</h3>
+                  <p>Click <strong>Generate with AI</strong> to let Gemini plan your trip!</p>
+                </div>
+              } @else {
+                <div class="days-grid">
+                  @for(day of selectedTrip()!.itineraries; track day.dayNumber) {
+                    <div class="day-card fade-up">
+                      <div class="day-number">Day {{ day.dayNumber }}</div>
+                      <div class="day-location">
+                        <span class="location-pin">📍</span> {{ day.location }}
+                      </div>
+                      <div class="day-activities">
+                        @for(part of parseActivity(day.activity); track $index) {
+                          <div class="activity-block" [class]="part.period.toLowerCase()">
+                            <span class="period-label">{{ part.period }}</span>
+                            <span class="period-text">{{ part.text }}</span>
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  }
+                </div>
+
+                <div class="regen-row">
+                  <p class="regen-hint">Not happy with the plan?</p>
+                  <div class="pref-row">
+                    <input class="form-control form-control-sm" [(ngModel)]="preferences"
+                           placeholder="Add preferences and regenerate…" />
+                  </div>
+                  <button class="btn btn-outline" (click)="generateItinerary()" [disabled]="isGenerating()">
+                    ↻ Regenerate Itinerary
+                  </button>
+                </div>
+              }
+            }
+          </main>
+
+        </div>
+      </div>
+    </div>
