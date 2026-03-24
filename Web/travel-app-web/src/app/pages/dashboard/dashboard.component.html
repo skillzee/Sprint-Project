@@ -1,1 +1,190 @@
-<p>dashboard works!</p>
+<div style="padding-top:68px">
+      <div class="page-hero">
+        <div class="container">
+          <div style="font-size:0.8rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold-light);margin-bottom:10px">Admin Panel</div>
+          <h1>Dashboard</h1>
+          <p>Overview of all bookings, revenue, and properties</p>
+        </div>
+      </div>
+
+      <div class="section container">
+        <div class="admin-tabs">
+          <button class="tab-btn" [class.active]="activeTab() === 'bookings'" (click)="activeTab.set('bookings')">Bookings & Revenue</button>
+          <button class="tab-btn" [class.active]="activeTab() === 'hotels'" (click)="activeTab.set('hotels')">Manage Hotels</button>
+        </div>
+
+        @if(loading()) { <div class="loading"><div class="spinner"></div></div> }
+        @else {
+          @if(activeTab() === 'bookings') {
+            <!-- Stats -->
+            <div class="stats-row">
+              <div class="stat-card">
+                <div class="stat-icon">🗓️</div>
+                <div class="stat-num">{{ bookings().length }}</div>
+                <div class="stat-label">Total Bookings</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon">✅</div>
+                <div class="stat-num">{{ confirmedCount() }}</div>
+                <div class="stat-label">Confirmed</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon">❌</div>
+                <div class="stat-num">{{ cancelledCount() }}</div>
+                <div class="stat-label">Cancelled</div>
+              </div>
+              <div class="stat-card highlight">
+                <div class="stat-icon">💰</div>
+                <div class="stat-num">₹{{ totalRevenue() | number }}</div>
+                <div class="stat-label">Total Revenue</div>
+              </div>
+            </div>
+
+            <!-- Bookings table -->
+            <div class="card" style="margin-top:32px;overflow:auto">
+              <div class="table-header">
+                <h3>All Bookings</h3>
+              </div>
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Ref</th>
+                    <th>Guest</th>
+                    <th>Hotel</th>
+                    <th>Room</th>
+                    <th>Check-in</th>
+                    <th>Check-out</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for(b of bookings(); track b.id) {
+                    <tr>
+                      <td><span class="mono">{{ b.bookingRef }}</span></td>
+                      <td>{{ b.userName }}</td>
+                      <td>{{ b.hotelName }}</td>
+                      <td>{{ b.roomType }}</td>
+                      <td>{{ b.checkInDate | date:'d MMM' }}</td>
+                      <td>{{ b.checkOutDate | date:'d MMM' }}</td>
+                      <td class="amount">₹{{ b.totalPrice | number }}</td>
+                      <td><span class="badge" [class]="'badge-' + b.status.toLowerCase()">{{ b.status }}</span></td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+
+          @if(activeTab() === 'hotels') {
+            <div class="admin-hotels-layout">
+              <div class="hotel-form-panel">
+                <div class="card card-body premium-form">
+                  <div class="form-header">
+                    <span class="icon-circle">✨</span>
+                    <div>
+                      <h3 style="margin:0;font-family:var(--font-display);font-size:1.3rem">Add New Property</h3>
+                      <p style="margin:0;font-size:0.85rem;color:var(--gray)">List a new hotel on VoyageIn</p>
+                    </div>
+                  </div>
+                  
+                  <div class="form-grid">
+                    <div class="form-group span-2">
+                      <label class="form-label">Property Name</label>
+                      <input class="form-control" [(ngModel)]="newHotel().name" placeholder="E.g. The Grand Alpine">
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">City</label>
+                      <input class="form-control" [(ngModel)]="newHotel().city" placeholder="E.g. Paris">
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Star Rating</label>
+                      <select class="form-control" [(ngModel)]="newHotel().starRating">
+                        <option [ngValue]="1">1 Star</option>
+                        <option [ngValue]="2">2 Stars</option>
+                        <option [ngValue]="3">3 Stars</option>
+                        <option [ngValue]="4">4 Stars</option>
+                        <option [ngValue]="5">5 Stars</option>
+                      </select>
+                    </div>
+                    <div class="form-group span-2">
+                      <label class="form-label">Full Address</label>
+                      <input class="form-control" [(ngModel)]="newHotel().address" placeholder="123 Example Street">
+                    </div>
+                    <div class="form-group span-2">
+                      <label class="form-label">Description</label>
+                      <textarea class="form-control" [(ngModel)]="newHotel().description" rows="3" placeholder="Tell guests what makes this place special..."></textarea>
+                    </div>
+                    <div class="form-group span-2">
+                      <label class="form-label">Amenities</label>
+                      <input class="form-control" [(ngModel)]="newHotel().amenities" placeholder="Pool, Spa, Free WiFi, Gym">
+                    </div>
+                  </div>
+
+                  <button class="btn btn-rust btn-lg" style="width:100%;margin-top:20px;justify-content:center" [disabled]="hotelSaving()" (click)="createHotel()">
+                    {{ hotelSaving() ? 'Saving...' : 'Create Property' }}
+                  </button>
+                </div>
+              </div>
+
+              <div class="hotels-list">
+                @for(h of hotels(); track h.id) {
+                  <div class="card hotel-admin-card">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+                      <div>
+                        <h3 style="font-family:var(--font-display);font-size:1.15rem;margin-bottom:4px">{{ h.name }}</h3>
+                        <p style="font-size:0.82rem;color:var(--gray);margin-bottom:8px">📍 {{ h.city }}</p>
+                      </div>
+                      <span class="badge badge-teal">{{ h.rooms.length }} Rooms</span>
+                    </div>
+
+                    @if(selectedHotelId() === h.id) {
+                      <div class="add-room-form">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;border-bottom:1px solid var(--sand-dark);padding-bottom:12px">
+                          <h4 style="margin:0;font-size:1rem;font-family:var(--font-display);color:var(--ink);display:flex;align-items:center;gap:8px">
+                            <span style="font-size:1.2rem">🛏️</span> Add New Room
+                          </h4>
+                          <button class="btn-icon" (click)="selectedHotelId.set(null)" title="Cancel">✕</button>
+                        </div>
+
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+                          <div class="form-group" style="margin:0">
+                            <label class="form-label">Room Type</label>
+                            <input class="form-control" placeholder="e.g. Ocean View Suite" [(ngModel)]="newRoom().type">
+                          </div>
+                          <div class="form-group" style="margin:0">
+                            <label class="form-label">Price per Night (₹)</label>
+                            <input type="number" class="form-control" placeholder="e.g. 5000" [(ngModel)]="newRoom().pricePerNight">
+                          </div>
+                          <div class="form-group span-2" style="margin:0">
+                            <label class="form-label">Max Occupancy</label>
+                            <select class="form-control" [(ngModel)]="newRoom().maxOccupancy">
+                              <option [ngValue]="1">1 Guest</option>
+                              <option [ngValue]="2">2 Guests</option>
+                              <option [ngValue]="3">3 Guests</option>
+                              <option [ngValue]="4">4 Guests</option>
+                              <option [ngValue]="5">5 Guests</option>
+                              <option [ngValue]="6">6 Guests</option>
+                            </select>
+                          </div>
+                          <div class="form-group span-2" style="margin:0">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" placeholder="What makes this room comfortable?" [(ngModel)]="newRoom().description" rows="2"></textarea>
+                          </div>
+                        </div>
+                        
+                        <button class="btn btn-teal" style="width:100%;justify-content:center" [disabled]="roomSaving()" (click)="addRoom(h.id)">
+                          {{ roomSaving() ? 'Saving...' : 'Publish Room' }}
+                        </button>
+                      </div>
+                    } @else {
+                      <button class="btn btn-outline btn-sm" style="margin-top:16px;width:100%;justify-content:center;border-style:dashed" (click)="selectedHotelId.set(h.id)">+ Add Room Type</button>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        }
+      </div>
+    </div>

@@ -7,6 +7,7 @@ import { TripsComponent } from './pages/trips/trips.component';
 import { BookingsComponent } from './pages/bookings/bookings.component';
 import { HotelComponent } from './pages/hotels/hotel/hotel.component';
 import { HotelDetailComponent } from './pages/hotels/hotel-detail/hotel-detail.component';
+import { DashboardComponent } from './pages/dashboard/dashboard.component';
 
 export const routes: Routes = [
     {path: "", component: HomeComponent},
@@ -17,6 +18,7 @@ export const routes: Routes = [
     {path: "hotels", component: HotelComponent},
     {path: "trips", component: TripsComponent},
     {path: "bookings", component: BookingsComponent},
+    {path: "dashboard", component: DashboardComponent}
 
 
 ];
