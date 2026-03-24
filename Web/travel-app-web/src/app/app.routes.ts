@@ -13,10 +13,10 @@ export const routes: Routes = [
     { path: "login", component: LoginComponent },
     {path: "register", component: RegisterComponent},
     {path: "flights", component: FlightsComponent},
+    {path: "hotels/:id", component: HotelDetailComponent},
     {path: "hotels", component: HotelComponent},
-    {path: "hotel/:id", component: HotelDetailComponent},
     {path: "trips", component: TripsComponent},
-    {path: "bookings", component: BookingsComponent}
+    {path: "bookings", component: BookingsComponent},
 
 
 ];

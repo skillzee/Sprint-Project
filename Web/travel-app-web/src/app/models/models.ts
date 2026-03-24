@@ -1,9 +1,9 @@
-export interface User{
-    id: number,
-    name: string,
-    email: string,
-    role: string,
-    token: string
+export interface User {
+  id: number,
+  name: string,
+  email: string,
+  role: string,
+  token: string
 }
 
 
@@ -29,28 +29,82 @@ export interface FlightOffer {
 
 export interface Airport {
   code: string;
-  city: string; 
+  city: string;
   country: string;
 }
 
 
 export interface Hotel {
   id: number;
+  name: string;
+  city: string;
+  address: string;
+  description: string;
+  starRating: number;
+  amenities: string;
+  rooms: Room[];
+}
+
+export interface Room {
+  id: number;
+  hotelId: number;
+  type: string;
+  pricePerNight: number;
+  isAvailable: boolean;
+  maxOccupancy: number;
+  description: string;
+}
+
+
+export interface CreateHotelDto {
   name: string; 
   city: string; 
   address: string;
   description: string; 
   starRating: number; 
-  amenities: string; 
-  rooms: Room[];
+  amenities: string;
 }
 
-export interface Room {
-  id: number; 
-  hotelId: number; 
-  type: string;
-  pricePerNight: number; 
-  isAvailable: boolean;
+export interface CreateRoomDto {
+  type: string; 
+  pricePerNight: number;
   maxOccupancy: number; 
   description: string;
+}
+
+
+export interface CreateBookingDto {
+  roomId: number; 
+  roomType: string; 
+  hotelName: string;
+  checkInDate: string; 
+  checkOutDate: string; 
+  pricePerNight: number;
+}
+
+
+
+export interface Booking {
+  id: number; 
+  userId: number; 
+  userName: string;
+  roomId: number; 
+  roomType: string; 
+  hotelName: string;
+  checkInDate: string; 
+  checkOutDate: string;
+  totalPrice: number; 
+  status: string; 
+  bookingRef: string; 
+  createdAt: string;
+}
+
+
+export interface CreateBookingDto {
+  roomId: number; 
+  roomType: string; 
+  hotelName: string;
+  checkInDate: string; 
+  checkOutDate: string; 
+  pricePerNight: number;
 }
