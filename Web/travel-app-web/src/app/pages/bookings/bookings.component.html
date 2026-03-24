@@ -1,1 +1,62 @@
-<p>bookings works!</p>
+ <div style="padding-top:68px">
+      <div class="page-hero">
+        <div class="container">
+          <h1>My Trips</h1>
+          <p>All your bookings in one place, {{ auth.currentUser()?.name }}</p>
+        </div>
+      </div>
+
+      <div class="section container">
+        @if(loading()) { <div class="loading"><div class="spinner"></div></div> }
+        @else if(bookings().length === 0) {
+          <div class="empty-state">
+            <div class="icon">🧳</div>
+            <h3>No trips yet!</h3>
+            <p>Your booked trips will appear here</p>
+          </div>
+        }
+        @else {
+          <div class="bookings-grid">
+            @for(b of bookings(); track b.id) {
+              <div class="booking-card fade-up">
+                <div class="booking-header">
+                  <div class="booking-hotel">
+                    <span class="hotel-icon">🏨</span>
+                    <div>
+                      <div class="hotel-name">{{ b.hotelName }}</div>
+                      <div class="room-type">{{ b.roomType }}</div>
+                    </div>
+                  </div>
+                  <span class="badge" [class]="'badge-' + b.status.toLowerCase()">{{ b.status }}</span>
+                </div>
+
+                <div class="booking-dates">
+                  <div class="date-block">
+                    <span class="date-label">Check-in</span>
+                    <span class="date-val">{{ b.checkInDate | date:'d MMM yyyy' }}</span>
+                  </div>
+                  <div class="date-sep">→</div>
+                  <div class="date-block">
+                    <span class="date-label">Check-out</span>
+                    <span class="date-val">{{ b.checkOutDate | date:'d MMM yyyy' }}</span>
+                  </div>
+                </div>
+
+                <div class="booking-footer">
+                  <div class="ref-info">
+                    <span class="ref-label">Ref</span>
+                    <span class="ref-val">{{ b.bookingRef }}</span>
+                  </div>
+                  <div class="total-price">₹{{ b.totalPrice | number }}</div>
+                  @if(b.status === 'Confirmed') {
+                    <button class="btn btn-sm btn-outline cancel-btn" (click)="cancel(b.id)" [disabled]="cancelling() === b.id">
+                      {{ cancelling() === b.id ? 'Cancelling...' : 'Cancel' }}
+                    </button>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>

@@ -16,7 +16,7 @@ import { FormsModule } from '@angular/forms';
 export class HotelDetailComponent {
 
   hotel = signal<Hotel | null>(null);
-  loading = signal(false);
+  loading = signal(true);
   selectedRoom = signal<Room | null>(null);
   checkIn = '';
   checkOut = '';
