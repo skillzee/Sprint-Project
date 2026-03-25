@@ -8,7 +8,6 @@
     <Project Path="Services/TravelApp.Services.Flight/TravelApp.Services.Flight.csproj" />
     <Project Path="Services/TravelApp.Services.Hotel/TravelApp.Services.Hotel.csproj" />
     <Project Path="Services/TravelApp.Services.Notification/TravelApp.Services.Notification.csproj" />
-    <Project Path="Services/TravelApp.Services.Payment/TravelApp.Services.Payment.csproj" />
     <Project Path="Services/TravelApp.Services.Trip/TravelApp.Services.Trip.csproj" Id="b1da72cf-824c-43e4-b9fb-1d0850c9f3eb" />
   </Folder>
   <Folder Name="/Shared/">
