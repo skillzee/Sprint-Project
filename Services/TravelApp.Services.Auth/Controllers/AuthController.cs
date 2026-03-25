@@ -23,9 +23,9 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public async Task<ActionResult<AuthResponseDto>> Register(RegisterDto dto)
     {
-        if (await _db.Users.AnyAsync(u => u.Email == dto.Email))
+        if (await _db.Users.AnyAsync(u => u.Email == dto.Email)){
             return BadRequest(new { message = "Email already exists." });
-
+        }
         var user = new User
         {
             Name = dto.Name,

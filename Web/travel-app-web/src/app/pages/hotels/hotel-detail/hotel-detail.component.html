@@ -140,19 +140,6 @@
                     <div class="booking-confirmed-banner">
                       <div class="confirmed-ref">✓ Booking saved · {{ confirmedBooking()!.bookingRef }}</div>
                     </div>
-                    <button class="btn btn-stripe confirm-btn"
-                      [disabled]="paymentLoading()"
-                      (click)="payWithStripe()">
-                      @if(paymentLoading()) {
-                        <span class="spinner-sm"></span> Redirecting...
-                      } @else {
-                        <span class="stripe-icon">💳</span> Pay ₹{{ totalPrice() | number:'1.0-0' }} with Stripe
-                      }
-                    </button>
-                    <p class="stripe-note">
-                      You'll be redirected to Stripe's secure checkout.
-                      <span class="stripe-secure">🔒 Secured by Stripe</span>
-                    </p>
                   }
                 }
               </div>

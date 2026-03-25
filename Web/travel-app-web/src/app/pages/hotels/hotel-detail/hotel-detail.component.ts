@@ -21,7 +21,6 @@ export class HotelDetailComponent {
   checkIn = '';
   checkOut = '';
   bookingLoading = signal(false);
-  paymentLoading = signal(false);
   bookingError = signal('');
   confirmedBooking = signal<any>('');
   today = new Date().toISOString().split('T')[0];
@@ -96,8 +95,5 @@ export class HotelDetailComponent {
     });
   }
 
-  payWithStripe(){
-
-  }
 
 }
