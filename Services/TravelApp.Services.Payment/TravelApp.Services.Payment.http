@@ -1,6 +1,0 @@
-@TravelApp.Services.Payment_HostAddress = http://localhost:5093
-
-GET {{TravelApp.Services.Payment_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
