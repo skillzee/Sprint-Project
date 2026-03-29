@@ -13,4 +13,7 @@
   <Folder Name="/Shared/">
     <Project Path="Shared/TravelApp.Shared/TravelApp.Shared.csproj" />
   </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="Tests/TravelApp.Services.Auth.Tests/TravelApp.Services.Auth.Tests.csproj" />
+  </Folder>
 </Solution>
