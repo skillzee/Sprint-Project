@@ -13,7 +13,7 @@ namespace TravelApp.Services.Auth.Tests.Helpers
     public class JwtHelperTests
     {
 
-        private readonly Mock<IConfiguration> _configMock;
+        private readonly Mock<IConfiguration> _configMock; // Jwt depends on configuration therefore we are mocking configuration
         private readonly JwtHelper _jwtHelper;
 
         public JwtHelperTests()
@@ -29,7 +29,6 @@ namespace TravelApp.Services.Auth.Tests.Helpers
 
 
         [Fact]
-
         public void GenerateToken_ShouldReturnValidJwtToken()
         {
             var user = new User
