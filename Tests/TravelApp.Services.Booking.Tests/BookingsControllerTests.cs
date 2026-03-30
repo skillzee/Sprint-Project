@@ -11,6 +11,7 @@ using System.Text;
 using TravelApp.Services.Booking.Controllers;
 using TravelApp.Services.Booking.Data;
 using TravelApp.Services.Booking.DTOs;
+using TravelApp.Services.Booking.Interfaces;
 using TravelApp.Shared;
 
 
@@ -21,24 +22,15 @@ namespace TravelApp.Services.Booking.Tests
     public class BookingsControllerTests
     {
 
-        private readonly BookingDbContext _db;
-        private readonly Mock<IPublishEndpoint> _busMock;
+        private readonly Mock<IBookingService> _serviceMock;
         private readonly BookingsController _controller;
 
         public BookingsControllerTests()
         {
-            var options = new DbContextOptionsBuilder<BookingDbContext>()
-                .UseInMemoryDatabase(Guid.NewGuid().ToString()).Options;
+            _serviceMock = new Mock<IBookingService>();
+            _controller = new BookingsController(_serviceMock.Object);
+
             
-
-            // Db Mock
-            _db = new BookingDbContext(options);
-
-            //Bus RabbitMQ Mock
-            _busMock = new Mock<IPublishEndpoint>();
-
-            //Controller
-            _controller = new BookingsController(_db, _busMock.Object);
 
             //Mocking the logged in user
             var user = new ClaimsPrincipal(new ClaimsIdentity(
@@ -61,18 +53,17 @@ namespace TravelApp.Services.Booking.Tests
 
 
         [Fact]
-        public async Task Create_ShouldSaveBooking_AndPublishEvent_WhenValid()
+        public async Task Create_ShouldReturnOk_AndCallService_WhenValid()
         {
             // Arrange
             var dto = new CreateBookingDto(1, "Deluxe", "Grand Hotel", DateTime.Today.AddDays(1), DateTime.Today.AddDays(3), 100);
+            var expectedResponse = new BookingDto(1, 1, "Test User", 1, "Deluxe", "Grand Hotel", dto.CheckInDate, dto.CheckOutDate, 200, "Confirmed", "REF123", DateTime.UtcNow);
+            _serviceMock.Setup(s => s.CreateBookingAsync(dto, 1, "Test User", "test@example.com")).ReturnsAsync(expectedResponse);
             // Act
             var result = await _controller.Create(dto);
             // Assert
             result.Should().BeOfType<OkObjectResult>();
-            _db.Bookings.Count().Should().Be(1);
-
-            // Verify that MassTransit actually "sent" the message
-            _busMock.Verify(x => x.Publish(It.IsAny<BookingConfirmedEvent>(), default), Times.Once);
+            _serviceMock.Verify(s=> s.CreateBookingAsync(dto, 1, "Test User", "test@example.com"), Times.Once);
         }
     }
 

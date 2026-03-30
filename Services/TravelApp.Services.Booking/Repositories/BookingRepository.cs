@@ -16,7 +16,6 @@ namespace TravelApp.Services.Booking.Repositories
         public async Task AddAsync(Models.Booking booking)
         {
             await _db.Bookings.AddAsync(booking);
-            await _db.SaveChangesAsync();
         }
 
         public async Task<IEnumerable<Models.Booking>> GetAllAsync()

@@ -65,6 +65,7 @@ namespace TravelApp.Services.Booking.Services
             };
             // 3. Data Access
             await _repo.AddAsync(booking);
+            await _repo.SaveChangesAsync();
             // 4. Messaging Logic: Notify other services
             await _bus.Publish(new BookingConfirmedEvent
             {
