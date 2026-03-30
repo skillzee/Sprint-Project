@@ -13,6 +13,9 @@ using TravelApp.Services.Booking.Data;
 using TravelApp.Services.Booking.DTOs;
 using TravelApp.Shared;
 
+
+// AAA methodology -> Arrangemnent -> Act -> Assret
+
 namespace TravelApp.Services.Booking.Tests
 {
     public class BookingsControllerTests
