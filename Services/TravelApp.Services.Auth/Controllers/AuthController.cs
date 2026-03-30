@@ -1,9 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using TravelApp.Services.Auth.Data;
 using TravelApp.Services.Auth.DTOs;
-using TravelApp.Services.Auth.Helpers;
-using TravelApp.Services.Auth.Models;
+using TravelApp.Services.Auth.Interfaces;
 
 namespace TravelApp.Services.Auth.Controllers;
 
@@ -11,46 +8,32 @@ namespace TravelApp.Services.Auth.Controllers;
 [Route("api/auth")]
 public class AuthController : ControllerBase
 {
-    private readonly AuthDbContext _db;
-    private readonly JwtHelper _jwtHelper;
+    private readonly IAuthService _authService;
 
-    public AuthController(AuthDbContext db, JwtHelper jwtHelper)
+    public AuthController(IAuthService authService)
     {
-        _db = db;
-        _jwtHelper = jwtHelper;
+        _authService = authService;
     }
 
     [HttpPost("register")]
     public async Task<ActionResult<AuthResponseDto>> Register(RegisterDto dto)
     {
-        if (await _db.Users.AnyAsync(u => u.Email == dto.Email)){
-            return BadRequest(new { message = "Email already exists." });
-        }
-        var user = new User
+        var result = await _authService.RegisterAsync(dto);
+        if (result == null)
         {
-            Name = dto.Name,
-            Email = dto.Email,
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
-            Role = dto.Role
-        };
+            return BadRequest(new { message = "Registration failed. Email might already exist." });
+        }
 
-        _db.Users.Add(user);
-        await _db.SaveChangesAsync();
-
-        var token = _jwtHelper.GenerateToken(user);
-
-        return Ok(new AuthResponseDto(user.Id, user.Name, user.Email, user.Role, token));
+        return Ok(result);
     }
 
     [HttpPost("login")]
     public async Task<ActionResult<AuthResponseDto>> Login(LoginDto dto)
     {
-        var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
-        if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
+        var result = await _authService.LoginAsync(dto);
+        if (result == null)
             return Unauthorized(new { message = "Invalid email or password." });
 
-        var token = _jwtHelper.GenerateToken(user);
-
-        return Ok(new AuthResponseDto(user.Id, user.Name, user.Email, user.Role, token));
+        return Ok(result);
     }
 }

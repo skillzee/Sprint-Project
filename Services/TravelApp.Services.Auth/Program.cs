@@ -4,6 +4,9 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using TravelApp.Services.Auth.Data;
 using TravelApp.Services.Auth.Helpers;
+using TravelApp.Services.Auth.Interfaces;
+using TravelApp.Services.Auth.Repositories;
+using TravelApp.Services.Auth.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,6 +21,8 @@ builder.Services.AddDbContext<AuthDbContext>(options =>
 
 // Add custom helpers
 builder.Services.AddScoped<JwtHelper>();
+builder.Services.AddScoped<IAuthRepository, AuthRepository>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 // Configure JWT Authentication
 var jwtKey = builder.Configuration.GetSection("JwtSettings:SecretKey").Value;
