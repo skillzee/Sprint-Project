@@ -1,45 +1,32 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Moq;
 using FluentAssertions;
 using TravelApp.Services.Auth.Controllers;
-using TravelApp.Services.Auth.Data;
 using TravelApp.Services.Auth.DTOs;
-using TravelApp.Services.Auth.Helpers;
-using TravelApp.Services.Auth.Models;
+using TravelApp.Services.Auth.Interfaces;
 
 namespace TravelApp.Services.Auth.Tests.Controllers;
 
 public class AuthControllerTests
 {
-    private readonly AuthDbContext _db;
-    private readonly Mock<IConfiguration> _configMock;
-    private readonly JwtHelper _jwtHelper;
+    private readonly Mock<IAuthService> _authServiceMock;
     private readonly AuthController _controller;
 
     public AuthControllerTests()
     {
-        var options = new DbContextOptionsBuilder<AuthDbContext>()
-            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString()) 
-            .Options;
-        _db = new AuthDbContext(options);
-
-
-        _configMock = new Mock<IConfiguration>();
-        var mockSection = new Mock<IConfigurationSection>();
-        mockSection.Setup(s => s["SecretKey"]).Returns("ThisIsAStrongSecretKeyForInternalTestsOnly");
-        _configMock.Setup(c => c.GetSection("JwtSettings")).Returns(mockSection.Object);
-        _jwtHelper = new JwtHelper(_configMock.Object);
-
-        _controller = new AuthController(_db, _jwtHelper);
+        _authServiceMock = new Mock<IAuthService>();
+        _controller = new AuthController(_authServiceMock.Object);
     }
 
     [Fact]
-    public async Task Register_ShouldCreateUser_WhenEmailIsUnique()
+    public async Task Register_ShouldReturnOk_WhenServiceSucceeds()
     {
         // Arrange
         var dto = new RegisterDto("Test User", "test@example.com", "Password123!", "User");
+        var expectedResponse = new AuthResponseDto(1, "Test User", "test@example.com", "User", "fake-jwt-token");
+
+        _authServiceMock.Setup(s => s.RegisterAsync(dto))
+            .ReturnsAsync(expectedResponse);
 
         // Act
         var result = await _controller.Register(dto);
@@ -49,42 +36,35 @@ public class AuthControllerTests
         var response = okResult.Value.Should().BeOfType<AuthResponseDto>().Subject;
         
         response.Email.Should().Be(dto.Email);
-        _db.Users.Should().Contain(u => u.Email == dto.Email);
+        response.Token.Should().Be("fake-jwt-token");
+        _authServiceMock.Verify(s => s.RegisterAsync(dto), Times.Once);
     }
 
     [Fact]
-    public async Task Register_ShouldReturnBadRequest_WhenEmailAlreadyExists()
+    public async Task Register_ShouldReturnBadRequest_WhenServiceReturnsNull()
     {
         // Arrange
-        var existingUser = new User { Name = "Old", Email = "duplicate@example.com", PasswordHash = "...", Role = "User" };
-        _db.Users.Add(existingUser);
-        await _db.SaveChangesAsync();
-
         var dto = new RegisterDto("New", "duplicate@example.com", "Password123!", "User");
+        _authServiceMock.Setup(s => s.RegisterAsync(dto))
+            .ReturnsAsync((AuthResponseDto?)null);
 
         // Act
         var result = await _controller.Register(dto);
 
         // Assert
         result.Result.Should().BeOfType<BadRequestObjectResult>();
+        _authServiceMock.Verify(s => s.RegisterAsync(dto), Times.Once);
     }
 
     [Fact]
     public async Task Login_ShouldReturnOk_WhenCredentialsAreValid()
     {
         // Arrange
-        var password = "Password123!";
-        var user = new User 
-        { 
-            Name = "John", 
-            Email = "john@example.com", 
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword(password), 
-            Role = "User" 
-        };
-        _db.Users.Add(user);
-        await _db.SaveChangesAsync();
+        var dto = new LoginDto("john@example.com", "Password123!");
+        var expectedResponse = new AuthResponseDto(1, "John", "john@example.com", "User", "valid-token");
 
-        var dto = new LoginDto("john@example.com", password);
+        _authServiceMock.Setup(s => s.LoginAsync(dto))
+            .ReturnsAsync(expectedResponse);
 
         // Act
         var result = await _controller.Login(dto);
@@ -93,6 +73,23 @@ public class AuthControllerTests
         var okResult = result.Result.Should().BeOfType<OkObjectResult>().Subject;
         var response = okResult.Value.Should().BeOfType<AuthResponseDto>().Subject;
         
-        response.Token.Should().NotBeNullOrEmpty();
+        response.Token.Should().Be("valid-token");
+        _authServiceMock.Verify(s => s.LoginAsync(dto), Times.Once);
+    }
+
+    [Fact]
+    public async Task Login_ShouldReturnUnauthorized_WhenServiceReturnsNull()
+    {
+        // Arrange
+        var dto = new LoginDto("wrong@example.com", "wrongpass");
+        _authServiceMock.Setup(s => s.LoginAsync(dto))
+            .ReturnsAsync((AuthResponseDto?)null);
+
+        // Act
+        var result = await _controller.Login(dto);
+
+        // Assert
+        result.Result.Should().BeOfType<UnauthorizedObjectResult>();
+        _authServiceMock.Verify(s => s.LoginAsync(dto), Times.Once);
     }
 }
