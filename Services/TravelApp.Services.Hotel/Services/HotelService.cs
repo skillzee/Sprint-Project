@@ -1,4 +1,6 @@
-﻿using TravelApp.Services.Hotel.DTOs;
+using Microsoft.Extensions.Caching.Distributed;
+using System.Text.Json;
+using TravelApp.Services.Hotel.DTOs;
 using TravelApp.Services.Hotel.Interfaces;
 using TravelApp.Services.Hotel.Models;
 
@@ -6,11 +8,15 @@ namespace TravelApp.Services.Hotel.Services
 {
     public class HotelService : IHotelService
     {
-
         private readonly IHotelRepository _repo;
-        public HotelService(IHotelRepository repo)
+        private readonly IDistributedCache _cache;
+        private readonly ILogger<HotelService> _logger;
+
+        public HotelService(IHotelRepository repo, IDistributedCache cache, ILogger<HotelService> logger)
         {
             _repo = repo;
+            _cache = cache;
+            _logger = logger;
         }
 
 
@@ -33,6 +39,9 @@ namespace TravelApp.Services.Hotel.Services
 
             await _repo.AddRoomAsync(room);
             await _repo.SaveChangesAsync();
+
+            // Cache Invalidation: The hotel details have changed, so clear it from cache!
+            await _cache.RemoveAsync($"hotel-{hotelId}");
 
             return ToRoomDto(room);
         }
@@ -65,25 +74,67 @@ namespace TravelApp.Services.Hotel.Services
             await _repo.DeleteHotelAsync(hotel);
             await _repo.SaveChangesAsync();
 
+            // Cache Invalidation: Hotel no longer exists!
+            await _cache.RemoveAsync($"hotel-{id}");
+
             return true;
         }
 
         public async Task<HotelDto?> GetHotelByIdAsync(int id)
         {
+            var cacheKey = $"hotel-{id}";
+            var cachedData = await _cache.GetStringAsync(cacheKey);
+
+            if (!string.IsNullOrEmpty(cachedData))
+            {
+                _logger.LogInformation("Cache hit for GetHotelById: {CacheKey}", cacheKey);
+                return JsonSerializer.Deserialize<HotelDto>(cachedData);
+            }
+
+            _logger.LogInformation("Cache miss for GetHotelById: {CacheKey}. Fetching from DB...", cacheKey);
+
             var hotel = await _repo.GetByIdWithRoomsAsync(id);
             if (hotel == null)
             {
                 return null;
             }
-            return ToDto(hotel);
+            
+            var dto = ToDto(hotel);
 
+            var options = new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1),
+                SlidingExpiration = TimeSpan.FromMinutes(20)
+            };
+            await _cache.SetStringAsync(cacheKey, JsonSerializer.Serialize(dto), options);
+            _logger.LogInformation("Saved hotel to cache: {CacheKey}", cacheKey);
+
+            return dto;
         }
 
         public async Task<IEnumerable<HotelDto>> GetHotelsAsync(string? city)
         {
-            var hotels = await _repo.GetAllWithRoomsAsync(city);
-            return hotels.Select(ToDto); 
+            var cacheKey = string.IsNullOrWhiteSpace(city) ? "hotels-all" : $"hotels-city-{city.ToLower()}";
+            var cachedData = await _cache.GetStringAsync(cacheKey);
 
+            if (!string.IsNullOrEmpty(cachedData))
+            {
+                _logger.LogInformation("Cache hit for GetHotels: {CacheKey}", cacheKey);
+                return JsonSerializer.Deserialize<IEnumerable<HotelDto>>(cachedData) ?? new List<HotelDto>();
+            }
+
+            _logger.LogInformation("Cache miss for GetHotels: {CacheKey}. Fetching from DB...", cacheKey);
+            var hotels = await _repo.GetAllWithRoomsAsync(city);
+            var dtos = hotels.Select(ToDto).ToList();
+
+            var options = new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(15) // Shorter cache for listings
+            };
+            await _cache.SetStringAsync(cacheKey, JsonSerializer.Serialize(dtos), options);
+            _logger.LogInformation("Saved {Count} hotels to cache: {CacheKey}", dtos.Count, cacheKey);
+
+            return dtos;
         }
 
 
