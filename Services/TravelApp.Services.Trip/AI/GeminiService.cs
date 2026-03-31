@@ -9,7 +9,7 @@ namespace TravelApp.Services.Trip.AI
     {
         Task<List<Models.Itinerary>> GetItineraryAsync(string destination, DateTime startDate, DateTime endDate, string? preferences);
     }
-    public class GeminiService(HttpClient http, IConfiguration config, ILogger<GeminiService> logger) : IGeminiService
+    public class GeminiService(HttpClient http, ILogger<GeminiService> logger) : IGeminiService
     {
         public async Task<List<Itinerary>> GetItineraryAsync(string destination, DateTime startDate, DateTime endDate, string? preferences)
         {

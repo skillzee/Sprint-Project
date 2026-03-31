@@ -6,130 +6,92 @@ using System.Security.Claims;
 using TravelApp.Services.Trip.AI;
 using TravelApp.Services.Trip.Data;
 using TravelApp.Services.Trip.DTOs;
+using TravelApp.Services.Trip.Interfaces;
 
 namespace TravelApp.Services.Trip.Controllers
 {
     [Route("api/trips")]
     [ApiController]
     [Authorize]
-    public class TripsController(TripDbContext db, IGeminiService gemini) : ControllerBase
+    public class TripsController(ITripService _service) : ControllerBase
     {
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<TripDto>>> GetMine()
         {
             var userId = GetUserId();
-            var trips = db.Trips.Include(t => t.Itineraries).Where(t => t.UserId == userId).OrderByDescending(t => t.CreatedAt);
-
-            return Ok(trips.Select(MapTrip));
+            var result =await _service.GetUserTripsAsync(userId);
+            if(result == null)
+            {
+                return BadRequest();
+            }
+            return Ok(result);
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<TripDto>> GetById(int id)
         {
-            var trip = await db.Trips.Include(t => t.Itineraries).FirstOrDefaultAsync(t => t.Id == id);
-            if(trip == null)
+            var userId = GetUserId();
+            var result =await _service.GetTripByIdAsync(id, userId);
+            if( result == null)
             {
                 return NotFound();
-
             }
-            if(trip.UserId != GetUserId())
-            {
-                return Forbid();
-            }
+            return Ok(result);
 
-            return Ok(MapTrip(trip));
         }
 
 
         [HttpPost]
         public async Task<ActionResult<TripDto>> Create(CreateTripDto dto)
         {
-            if(dto.EndDate <= dto.StartDate)
+            var userId = GetUserId();
+            var result =await _service.CreateTripAsync(dto, userId);
+
+            if(result == null)
             {
-                return BadRequest(new 
-                {
-                    message = "End date must be after start date."
-                }
-                );
+                return BadRequest();
             }
 
-
-            var trip = new Models.Trip
-            {
-                UserId = GetUserId(),
-                Destination = dto.Destination,
-                StartDate = dto.StartDate,
-                EndDate = dto.EndDate,
-                CreatedAt = DateTime.Now
-            };
-            db.Trips.Add(trip);
-            await db.SaveChangesAsync();
-
-            return Ok(MapTrip(trip));
+            return Ok(result);
         }
 
         [HttpPost("generate-itinerary")]
         public async Task<ActionResult<TripDto>> GenerateItinerary(GenerateItineraryDto dto)
         {
-            var trip = await db.Trips.Include(t => t.Itineraries).FirstOrDefaultAsync(t => t.Id == dto.TripId);
+            int userId = GetUserId();
+            var result = await _service.GenerateItineraryAsync(dto, userId);
 
-            if(trip == null)
+            if(result == null)
             {
-                return NotFound();
+                return BadRequest();
             }
 
-            if(trip.UserId != GetUserId())
-            {
-                return Forbid();
-            }
-
-            db.Itineraries.RemoveRange(trip.Itineraries);
-            await db.SaveChangesAsync();
-
-            var items = await gemini.GetItineraryAsync(trip.Destination, trip.StartDate, trip.EndDate, dto.Preferences);
+            return Ok(result);
 
 
-            foreach (var item in items)
-            {
-                item.TripId = trip.Id;
-            }
-            db.Itineraries.AddRange(items);
-            await db.SaveChangesAsync();
-
-            var updated = await db.Trips.Include(t => t.Itineraries).FirstAsync(t => t.Id == trip.Id);
-            return Ok(MapTrip(updated));
         }
 
 
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(int id)
         {
-            var trip = db.Trips.Include(t => t.Itineraries).FirstOrDefault(t => t.Id == id);
+            int userId = GetUserId();
+            var ressult = await _service.DeleteTripAsync(id, userId);
 
-            if(trip == null)
+            if(ressult == false)
             {
-                return NotFound();
+                return NotFound(new { message = "Trip not found or you don't have permission to delete it." });
             }
 
-            if(trip.UserId != GetUserId())
-            {
-                return Forbid();
-            }
 
-            db.Trips.Remove(trip);
-            await db.SaveChangesAsync();
             return NoContent();
         }
 
 
         private int GetUserId() => int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
-        private static TripDto MapTrip(Models.Trip t) => new(
-        t.Id, t.UserId, t.Destination, t.StartDate, t.EndDate, t.CreatedAt,
-        t.Itineraries.OrderBy(i => i.DayNumber)
-            .Select(i => new ItineraryDto(i.Id, i.TripId, i.DayNumber, i.Activity, i.Location))
-            .ToList());
+        
     }
 
 }

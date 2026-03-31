@@ -1,10 +1,13 @@
-using TravelApp.Services.Trip.Data;
-using Microsoft.EntityFrameworkCore;
+using DotNetEnv;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using TravelApp.Services.Trip.AI;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using DotNetEnv;
+using TravelApp.Services.Trip.AI;
+using TravelApp.Services.Trip.Data;
+using TravelApp.Services.Trip.Interfaces;
+using TravelApp.Services.Trip.Repositories;
+using TravelApp.Services.Trip.Services;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -38,6 +41,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddAuthorization();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddScoped<ITripRepository, TripRepository>();
+builder.Services.AddScoped<ITripService, TripService>();
 builder.Services.AddCors(o => o.AddPolicy("AllowAll",
 p => p.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
 
