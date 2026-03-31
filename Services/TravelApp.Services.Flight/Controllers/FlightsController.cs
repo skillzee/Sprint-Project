@@ -1,13 +1,14 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using TravelApp.Services.Flight.DTOs;
+using TravelApp.Services.Flight.Interfaces;
 using TravelApp.Services.Flight.Services;
 
 namespace TravelApp.Services.Flight.Controllers
 {
     [Route("api/flights")]
     [ApiController]
-    public class FlightsController(SerpApiFlightService flightService) : ControllerBase
+    public class FlightsController(IFlightService flightService) : ControllerBase
     {
 
         [HttpGet]
@@ -17,10 +18,14 @@ namespace TravelApp.Services.Flight.Controllers
         [FromQuery] int adults = 1,
         [FromQuery] string cabin = "ECONOMY")
         {
+
+
             var searchDate = date ?? DateTime.Today.AddDays(7).ToString("yyyy-MM-dd");
             var results = await flightService.SearchFlightsAsync(origin, destination, searchDate, adults, cabin);
             return Ok(results);
+        
         }
+
 
 
         [HttpGet("airports")]

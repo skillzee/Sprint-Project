@@ -2,6 +2,8 @@ using TravelApp.Services.Flight.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using TravelApp.Services.Flight.Interfaces;
+using TravelApp.Services.Flight.Repositories;
 
 
 
@@ -13,8 +15,8 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
 
-builder.Services.AddHttpClient<SerpApiFlightService>();
-builder.Services.AddScoped<SerpApiFlightService>();
+builder.Services.AddHttpClient<IFlightRepository, FlightRepository>();
+builder.Services.AddScoped<IFlightService, FlightService>();
 
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
