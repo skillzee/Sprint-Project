@@ -1,4 +1,6 @@
-﻿using TravelApp.Services.Flight.DTOs;
+using Microsoft.Extensions.Caching.Distributed;
+using TravelApp.Services.Flight.DTOs;
+using System.Text.Json;
 using TravelApp.Services.Flight.Interfaces;
 
 namespace TravelApp.Services.Flight.Services;
@@ -7,17 +9,30 @@ public class FlightService : IFlightService
 {
     private readonly IFlightRepository _repo;
     private readonly ILogger<FlightService> _logger;
+    private readonly IDistributedCache _cache;
 
-    public FlightService(IFlightRepository repo, ILogger<FlightService> logger)
+    public FlightService(IFlightRepository repo, ILogger<FlightService> logger, IDistributedCache cache)
     {
         _repo = repo;
         _logger = logger;
+        _cache = cache;
     }
 
     public async Task<List<FlightOfferDto>> SearchFlightsAsync(string origin, string destination, string date, int adults = 1, string cabinClass = "ECONOMY")
     {
         try
         {
+            var cacheKey = $"flights-{origin}-{destination}-{date}-{adults}-{cabinClass}".ToLower();
+            var cachedFlights = await _cache.GetStringAsync(cacheKey);
+
+            if (!string.IsNullOrEmpty(cachedFlights))
+            {
+                _logger.LogInformation("Cache hit for SearchFlights: {CacheKey}", cacheKey);
+                return JsonSerializer.Deserialize<List<FlightOfferDto>>(cachedFlights) ?? new List<FlightOfferDto>();
+            }
+
+            _logger.LogInformation("Cache miss for SearchFlights: {CacheKey}. Fetching from API...", cacheKey);
+
             // 1. Business Logic: Map string cabin class to API specific integer
             int travelClassInt = cabinClass.ToUpper() switch
             {
@@ -72,6 +87,19 @@ public class FlightService : IFlightService
                 );
 
                 flightOffers.Add(dto);
+            }
+
+            if (flightOffers.Any())
+            {
+                var cacheOptions = new DistributedCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1),
+                    SlidingExpiration = TimeSpan.FromMinutes(15)
+                };
+
+                var serializedData = JsonSerializer.Serialize(flightOffers);
+                await _cache.SetStringAsync(cacheKey, serializedData, cacheOptions);
+                _logger.LogInformation("Saved {Count} flights into cache for SearchFlights: {CacheKey}", flightOffers.Count, cacheKey);
             }
 
             return flightOffers;

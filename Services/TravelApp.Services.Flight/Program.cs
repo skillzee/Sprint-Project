@@ -14,6 +14,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration.GetConnectionString("Redis");
+    options.InstanceName = "FlightService_";
+});
+
 
 builder.Services.AddHttpClient<IFlightRepository, FlightRepository>();
 builder.Services.AddScoped<IFlightService, FlightService>();
