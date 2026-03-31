@@ -16,5 +16,6 @@
   <Folder Name="/Tests/">
     <Project Path="Tests/TravelApp.Services.Auth.Tests/TravelApp.Services.Auth.Tests.csproj" />
     <Project Path="Tests/TravelApp.Services.Booking.Tests/TravelApp.Services.Booking.Tests.csproj" />
+    <Project Path="Tests/TravelApp.Services.Flights.Tests/TravelApp.Services.Flights.Tests.csproj" Id="c66833b4-64d2-4925-b10e-43e5f3305ca1" />
   </Folder>
 </Solution>
