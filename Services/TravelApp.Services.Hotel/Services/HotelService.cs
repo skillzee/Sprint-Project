@@ -42,6 +42,8 @@ namespace TravelApp.Services.Hotel.Services
 
             // Cache Invalidation: The hotel details have changed, so clear it from cache!
             await _cache.RemoveAsync($"hotel-{hotelId}");
+            await _cache.RemoveAsync($"hotels-city-{hotel.City.ToLower()}");
+            await _cache.RemoveAsync($"hotels-all");
 
             return ToRoomDto(room);
         }
@@ -61,6 +63,9 @@ namespace TravelApp.Services.Hotel.Services
             await _repo.AddHotelAsync(hotel);
             await _repo.SaveChangesAsync();
 
+            await _cache.RemoveAsync("hotels-all");
+            await _cache.RemoveAsync($"hotels-city-{hotel.City.ToLower()}");
+
             return ToDto(hotel);
         }
 
@@ -76,6 +81,8 @@ namespace TravelApp.Services.Hotel.Services
 
             // Cache Invalidation: Hotel no longer exists!
             await _cache.RemoveAsync($"hotel-{id}");
+            await _cache.RemoveAsync($"hotels-city-{hotel.City.ToLower()}");
+            await _cache.RemoveAsync("hotels-all");
 
             return true;
         }
