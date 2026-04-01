@@ -1,4 +1,6 @@
-﻿using TravelApp.Services.Trip.AI;
+using Microsoft.Extensions.Caching.Distributed;
+using System.Text.Json;
+using TravelApp.Services.Trip.AI;
 using TravelApp.Services.Trip.DTOs;
 using TravelApp.Services.Trip.Interfaces;
 
@@ -10,10 +12,15 @@ namespace TravelApp.Services.Trip.Services
 
         private readonly ITripRepository _repo;
         private readonly IGeminiService _gemini;
-        public TripService(ITripRepository repo, IGeminiService gemini)
+        private readonly IDistributedCache _cache;
+        private readonly ILogger<TripService> _logger;
+
+        public TripService(ITripRepository repo, IGeminiService gemini, IDistributedCache cache, ILogger<TripService> logger)
         {
             _repo = repo;
             _gemini = gemini;
+            _cache = cache;
+            _logger = logger;
         }
 
 
@@ -36,6 +43,7 @@ namespace TravelApp.Services.Trip.Services
 
             await _repo.AddTripAsync(trip);
             await _repo.SaveChangesAsync();
+            await _cache.RemoveAsync($"trips-user-{userId}");
 
             return MapTrip(trip);
         }
@@ -49,6 +57,8 @@ namespace TravelApp.Services.Trip.Services
             }
             await _repo.DeleteTripAsync(trip);
             await _repo.SaveChangesAsync();
+            await _cache.RemoveAsync($"trip-{id}-{userId}");
+            await _cache.RemoveAsync($"trips-user-{userId}");
             return true;
         }
 
@@ -75,24 +85,71 @@ namespace TravelApp.Services.Trip.Services
 
 
             var updated = await _repo.GetTripByIdAsync(trip.Id);
+
+            await _cache.RemoveAsync($"trip-{trip.Id}-{userId}");
+            await _cache.RemoveAsync($"trips-user-{userId}");
             return updated != null ? MapTrip(updated) : null;
         }
 
         public async Task<TripDto?> GetTripByIdAsync(int id, int userId)
         {
+            var cacheKey = $"trip-{id}-{userId}";
+            var cachedData = await _cache.GetStringAsync(cacheKey);
+
+            //Cache Hit
+            if (!string.IsNullOrEmpty(cachedData))
+            {
+                _logger.LogInformation("Cache hit for GetTripById: {CacheKey}", cacheKey);
+                return JsonSerializer.Deserialize<TripDto>(cachedData);
+            }
+
+            _logger.LogInformation("Cache miss for GetTripById: {CacheKey}. Fetching from DB...", cacheKey);
+
+            //Cache Miss
             var trip = await _repo.GetTripByIdAsync(id);
             if (trip == null || trip.UserId != userId)
             {
                 return null;
             }
-            return MapTrip(trip);
+            var dto = MapTrip(trip);
+
+            var options = new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(30)
+            };
+            await _cache.SetStringAsync(cacheKey, JsonSerializer.Serialize(dto), options);
+            _logger.LogInformation("Saved trip to cache: {CacheKey}", cacheKey);
+
+            return dto;
         }
 
         public async Task<IEnumerable<TripDto>> GetUserTripsAsync(int userId)
         {
-            var trips = await _repo.GetUserTripsAsync(userId);
-            return trips.Select(MapTrip);
+            var cacheKey = $"trips-user-{userId}";
+            var cachedData = await _cache.GetStringAsync(cacheKey);
 
+            //Cache Hit
+            if (!string.IsNullOrEmpty(cachedData))
+            {
+                _logger.LogInformation("Cache hit for GetUserTrips: {CacheKey}", cacheKey);
+                return JsonSerializer.Deserialize<IEnumerable<TripDto>>(cachedData) ?? new List<TripDto>();
+            }
+
+            _logger.LogInformation("Cache miss for GetUserTrips: {CacheKey}. Fetching from DB...", cacheKey);
+
+            //Cache Miss
+            var trips = await _repo.GetUserTripsAsync(userId);
+            var dto = trips.Select(MapTrip).ToList();
+
+            var options = new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(30)
+            };
+
+            await _cache.SetStringAsync(cacheKey, JsonSerializer.Serialize(dto) , options);
+            _logger.LogInformation("Saved {Count} trips to cache: {CacheKey}", dto.Count, cacheKey);
+
+            return dto;
         }
 
 
