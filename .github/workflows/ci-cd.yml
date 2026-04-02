@@ -1,0 +1,76 @@
+name: TravelApp CI/CD
+
+# ──────────────────────────────────────────────
+# WHEN does this pipeline run?
+# ──────────────────────────────────────────────
+on:
+  push:
+    branches: [ "main" ]          # Every push to main triggers CI
+  pull_request:
+    branches: [ "main" ]          # Every PR to main triggers CI
+
+# ──────────────────────────────────────────────
+# JOBS — each job runs on a fresh virtual machine
+# ──────────────────────────────────────────────
+jobs:
+
+  # ============================================
+  # JOB 1: Build & Test all .NET services
+  # ============================================
+  build-and-test:
+    name: Build & Run Tests
+    runs-on: ubuntu-latest         # Free Linux VM provided by GitHub
+
+    steps:
+
+      # Step 1: Download your code onto the VM
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: Install .NET 10 SDK on the VM
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      # Step 3: Restore NuGet packages (like npm install)
+      - name: Restore dependencies
+        run: dotnet restore TravelApp.slnx
+
+      # Step 4: Build the entire solution (all services)
+      - name: Build solution
+        run: dotnet build TravelApp.slnx --no-restore --configuration Release
+
+      # Step 5: Run ALL unit tests (Auth, Booking, Flight, Hotel)
+      - name: Run unit tests
+        run: dotnet test TravelApp.slnx --no-build --configuration Release --verbosity normal
+        # --verbosity normal shows you which tests passed/failed in the logs
+
+  # ============================================
+  # JOB 2: Docker Build (runs only on main branch)
+  # This job only runs AFTER build-and-test succeeds
+  # ============================================
+  docker-build:
+    name: Build Docker Images
+    runs-on: ubuntu-latest
+    needs: build-and-test           # Wait for tests to pass first!
+    if: github.ref == 'refs/heads/main'   # Only on pushes to main (not PRs)
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Build Docker image for Auth Service
+      # (Repeat this block for each service once you add Dockerfiles)
+      - name: Build Auth Service image
+        run: |
+          echo "Building Auth Service Docker image..."
+          # Uncomment these lines once you add a Dockerfile to the Auth service:
+          # docker build -t travelapp-auth:${{ github.sha }} ./Services/TravelApp.Services.Auth
+          echo "✅ Docker build step ready — add your Dockerfiles to enable this"
+
+      - name: Summary
+        run: |
+          echo "🚀 Pipeline complete!"
+          echo "Commit: ${{ github.sha }}"
+          echo "Branch: ${{ github.ref_name }}"
