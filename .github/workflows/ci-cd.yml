@@ -12,7 +12,7 @@ on:
 jobs:
 
   # ============================================
-  # JOB 1: Build & Test all .NET services
+  # JOB 1: Build & Test all .NET backend services
   # ============================================
   build-and-test:
     name: Build & Run Tests
@@ -23,7 +23,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Fixed: using @v4.2.2 removes the Node.js 20 deprecation warnings
       - name: Setup .NET 10
         uses: actions/setup-dotnet@v4
         with:
@@ -39,42 +38,58 @@ jobs:
         run: dotnet test TravelApp.slnx --no-build --configuration Release --verbosity normal
 
   # ============================================
-  # JOB 2: Build AND Push Docker Images
-  # Runs only on pushes to main, after tests pass
+  # JOB 2: Build & Test the Angular frontend
+  # Runs in parallel with Job 1 — independent
+  # ============================================
+  frontend-build:
+    name: Build Angular Frontend
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Install Node.js 20 (required for Angular 19)
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-path: Web/travel-app-web/package-lock.json
+
+      - name: Install dependencies
+        working-directory: Web/travel-app-web
+        run: npm ci
+        # npm ci is stricter than npm install — uses exact versions
+        # from package-lock.json, fails if lock file is out of sync
+
+      # This catches TypeScript errors, missing imports, broken templates
+      - name: Build Angular app
+        working-directory: Web/travel-app-web
+        run: npm run build -- --configuration production
+
+  # ============================================
+  # JOB 3: Build & Push ALL Docker Images
+  # Waits for BOTH Job 1 AND Job 2 to pass first
   # ============================================
   docker-build-and-push:
     name: Build & Push Docker Images
     runs-on: ubuntu-latest
-    needs: build-and-test
+    needs: [build-and-test, frontend-build]   # Both jobs must pass
     if: github.ref == 'refs/heads/main'
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # ── Step 1: Log in to Docker Hub ──────────────────────────
-      # Uses the secrets you added in GitHub → Settings → Secrets.
-      # DOCKER_USERNAME = skillzee
-      # DOCKER_PASSWORD = your Docker Hub password or access token
-      # The pipeline never sees your actual password — GitHub injects
-      # it securely at runtime and masks it in all logs.
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # ── Step 2: Build + Push each service ─────────────────────
-      # Each image gets TWO tags:
-      #   :latest        → always points to the newest build
-      #   :<commit-sha>  → permanently identifies this exact commit
-      #
-      # Example on Docker Hub:
-      #   skillzee/travelapp-auth:latest
-      #   skillzee/travelapp-auth:e248579
-      #
-      # The commit-sha tag is useful if you ever need to roll back
-      # to a specific version — you know exactly what code is in it.
+      # ── Backend services ──────────────────────────────────────
 
       - name: Build & Push Auth Service
         run: |
@@ -132,12 +147,21 @@ jobs:
           docker push skillzee/travelapp-gateway:latest
           docker push skillzee/travelapp-gateway:${{ github.sha }}
 
-      # ── Step 3: Confirm what was pushed ───────────────────────
+      # ── Frontend ──────────────────────────────────────────────
+
+      - name: Build & Push Frontend
+        run: |
+          docker build -f ./Web/travel-app-web/Dockerfile \
+            -t skillzee/travelapp-web:latest \
+            -t skillzee/travelapp-web:${{ github.sha }} .
+          docker push skillzee/travelapp-web:latest
+          docker push skillzee/travelapp-web:${{ github.sha }}
+
       - name: Summary
         run: |
           echo "🚀 All images pushed to Docker Hub!"
           echo ""
-          echo "Images available at hub.docker.com/u/skillzee:"
+          echo "Backend:"
           echo "  skillzee/travelapp-auth:latest"
           echo "  skillzee/travelapp-booking:latest"
           echo "  skillzee/travelapp-flight:latest"
@@ -146,4 +170,7 @@ jobs:
           echo "  skillzee/travelapp-notification:latest"
           echo "  skillzee/travelapp-gateway:latest"
           echo ""
-          echo "All also tagged with commit: ${{ github.sha }}"
+          echo "Frontend:"
+          echo "  skillzee/travelapp-web:latest"
+          echo ""
+          echo "All tagged with commit: ${{ github.sha }}"
