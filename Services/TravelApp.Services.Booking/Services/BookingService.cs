@@ -61,7 +61,7 @@ namespace TravelApp.Services.Booking.Services
                 TotalPrice = total,
                 Status = "Confirmed",
                 BookingRef = bookingRef,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.Now
             };
             // 3. Data Access
             await _repo.AddAsync(booking);
