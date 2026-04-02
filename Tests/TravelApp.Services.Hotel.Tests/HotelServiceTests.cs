@@ -4,18 +4,24 @@ using TravelApp.Services.Hotel.DTOs;
 using TravelApp.Services.Hotel.Interfaces;
 using TravelApp.Services.Hotel.Models;
 using TravelApp.Services.Hotel.Services;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Logging;
 
 namespace TravelApp.Services.Hotel.Tests;
 
 public class HotelServiceTests
 {
     private readonly Mock<IHotelRepository> _repoMock;
+    private readonly Mock<IDistributedCache> _cacheMock;
+    private readonly Mock<ILogger<HotelService>> _loggerMock;
     private readonly HotelService _service;
 
     public HotelServiceTests()
     {
         _repoMock = new Mock<IHotelRepository>();
-        _service = new HotelService(_repoMock.Object);
+        _cacheMock = new Mock<IDistributedCache>();
+        _loggerMock = new Mock<ILogger<HotelService>>();
+        _service = new HotelService(_repoMock.Object, _cacheMock.Object, _loggerMock.Object);
     }
 
     [Fact]

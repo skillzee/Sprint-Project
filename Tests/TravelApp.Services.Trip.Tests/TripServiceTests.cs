@@ -5,6 +5,8 @@ using TravelApp.Services.Trip.DTOs;
 using TravelApp.Services.Trip.Interfaces;
 using TravelApp.Services.Trip.Models;
 using TravelApp.Services.Trip.Services;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Logging;
 
 namespace TravelApp.Services.Trip.Tests;
 
@@ -12,13 +14,17 @@ public class TripServiceTests
 {
     private readonly Mock<ITripRepository> _repoMock;
     private readonly Mock<IGeminiService> _geminiMock;
+    private readonly Mock<IDistributedCache> _cacheMock;
+    private readonly Mock<ILogger<TripService>> _loggerMock;
     private readonly TripService _service;
 
     public TripServiceTests()
     {
         _repoMock = new Mock<ITripRepository>();
         _geminiMock = new Mock<IGeminiService>();
-        _service = new TripService(_repoMock.Object, _geminiMock.Object);
+        _cacheMock = new Mock<IDistributedCache>();
+        _loggerMock = new Mock<ILogger<TripService>>();
+        _service = new TripService(_repoMock.Object, _geminiMock.Object, _cacheMock.Object, _loggerMock.Object);
     }
 
     [Fact]

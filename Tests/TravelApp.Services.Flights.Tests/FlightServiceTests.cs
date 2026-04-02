@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System;
@@ -7,6 +7,7 @@ using System.Text;
 using TravelApp.Services.Flight.DTOs;
 using TravelApp.Services.Flight.Interfaces;
 using TravelApp.Services.Flight.Services;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace TravelApp.Services.Flights.Tests
 {
@@ -15,13 +16,15 @@ namespace TravelApp.Services.Flights.Tests
 
         private readonly Mock<IFlightRepository> _repoMock;
         private readonly Mock<ILogger<FlightService>> _loggerMock;
+        private readonly Mock<IDistributedCache> _cacheMock;
         private readonly FlightService _service;
 
         public FlightServiceTests()
         {
             _repoMock = new Mock<IFlightRepository>();
             _loggerMock = new Mock<ILogger<FlightService>>();
-            _service = new FlightService(_repoMock.Object, _loggerMock.Object);
+            _cacheMock = new Mock<IDistributedCache>();
+            _service = new FlightService(_repoMock.Object, _loggerMock.Object, _cacheMock.Object);
         }
 
 
