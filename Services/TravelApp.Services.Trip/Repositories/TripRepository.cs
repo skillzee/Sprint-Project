@@ -26,7 +26,7 @@ namespace TravelApp.Services.Trip.Repositories
 
         public async Task ClearItinerariesAsync(int tripId)
         {
-            var itenary = await _db.Itineraries.Where(i => i.Id == tripId).ToListAsync();
+            var itenary = await _db.Itineraries.Where(i => i.TripId == tripId).ToListAsync();
             _db.Itineraries.RemoveRange(itenary);
         }
 
