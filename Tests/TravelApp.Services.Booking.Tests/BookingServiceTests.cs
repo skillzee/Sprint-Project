@@ -32,8 +32,9 @@ public class BookingServiceTests
         var result = await _service.CreateBookingAsync(dto, 1, "User", "user@test.com");
 
         // Assert
-        result.Should().NotBeNull();
-        result!.TotalPrice.Should().Be(200);
+        result.result.Should().NotBeNull();
+        result.result!.TotalPrice.Should().Be(200);
+        result.errorMessage.Should().BeNull();
         _repoMock.Verify(r => r.AddAsync(It.IsAny<Models.Booking>()), Times.Once);
         _repoMock.Verify(r => r.SaveChangesAsync(), Times.Once);
         _busMock.Verify(b => b.Publish(It.IsAny<BookingConfirmedEvent>(), default), Times.Once);
@@ -50,7 +51,8 @@ public class BookingServiceTests
         var result = await _service.CreateBookingAsync(dto, 1, "User", "user@test.com");
 
         // Assert
-        result.Should().BeNull();
+        result.result.Should().BeNull();
+        result.errorMessage.Should().Be("Invalid booking dates");
     }
 
     [Fact]
@@ -64,7 +66,8 @@ public class BookingServiceTests
         var result = await _service.CreateBookingAsync(dto, 1, "User", "user@test.com");
 
         // Assert
-        result.Should().BeNull();
+        result.result.Should().BeNull();
+        result.errorMessage.Should().Be("Booking with same date already exists by the user");
         _repoMock.Verify(r => r.AddAsync(It.IsAny<Models.Booking>()), Times.Never);
         _repoMock.Verify(r => r.SaveChangesAsync(), Times.Never);
         _busMock.Verify(b => b.Publish(It.IsAny<BookingConfirmedEvent>(), default), Times.Never);

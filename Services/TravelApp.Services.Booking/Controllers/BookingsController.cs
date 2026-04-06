@@ -56,12 +56,12 @@ namespace TravelApp.Services.Booking.Controllers
 
             var result = await _service.CreateBookingAsync(dto, userId, userName, userEmail);
 
-            if (result == null)
+            if (result.result == null)
             {
-                return BadRequest("Invalid booking data");
+                return BadRequest(result.errorMessage ?? "Invalid booking data");
             }
 
-            return Ok(result);
+            return Ok(result.result);
 
 
         }

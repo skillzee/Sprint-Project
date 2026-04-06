@@ -6,7 +6,7 @@ namespace TravelApp.Services.Booking.Interfaces
     {
         Task<Object> GetAllBookingWithRevenueAsync();
         Task<IEnumerable<BookingDto>> GetUserBookingsAsync(int userId);
-        Task<BookingDto?> CreateBookingAsync(CreateBookingDto dto, int userId, string userName, string userEmai);
+        Task<(BookingDto? result, string? errorMessage)> CreateBookingAsync(CreateBookingDto dto, int userId, string userName, string userEmai);
         Task<bool> CancelBookingAsync(int id, int userId, string role);
     }
 }

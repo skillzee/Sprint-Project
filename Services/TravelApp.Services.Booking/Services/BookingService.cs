@@ -37,18 +37,18 @@ namespace TravelApp.Services.Booking.Services
             return true;
         }
 
-        public async Task<BookingDto?> CreateBookingAsync(CreateBookingDto dto, int userId, string userName, string userEmai)
+        public async Task<(BookingDto? result, string? errorMessage)> CreateBookingAsync(CreateBookingDto dto, int userId, string userName, string userEmai)
         {
             // 1. Business Validation
             if (dto.CheckInDate < DateTime.Today || dto.CheckOutDate <= dto.CheckInDate)
             {
-                return null;
+                return (null, "Invalid booking dates");
             }
             // 2. Business Logic: Duplicate booking prevention
             var hasOverlap = await _repo.HasOverlappingBookingAsync(userId, dto.RoomId, dto.CheckInDate, dto.CheckOutDate);
             if (hasOverlap)
             {
-                return null;
+                return (null, "Booking with same date already exists by the user");
             }
 
             // 3. Business Logic: Calculations & Ref
@@ -87,7 +87,7 @@ namespace TravelApp.Services.Booking.Services
                 TotalPrice = total,
                 BookingRef = bookingRef
             });
-            return MapSingleToDto(booking);
+            return (MapSingleToDto(booking), null);
         }
 
         public async Task<object> GetAllBookingWithRevenueAsync()

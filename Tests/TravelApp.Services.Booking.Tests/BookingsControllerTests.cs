@@ -58,7 +58,7 @@ namespace TravelApp.Services.Booking.Tests
             // Arrange
             var dto = new CreateBookingDto(1, "Deluxe", "Grand Hotel", DateTime.Today.AddDays(1), DateTime.Today.AddDays(3), 100);
             var expectedResponse = new BookingDto(1, 1, "Test User", 1, "Deluxe", "Grand Hotel", dto.CheckInDate, dto.CheckOutDate, 200, "Confirmed", "REF123", DateTime.UtcNow);
-            _serviceMock.Setup(s => s.CreateBookingAsync(dto, 1, "Test User", "test@example.com")).ReturnsAsync(expectedResponse);
+            _serviceMock.Setup(s => s.CreateBookingAsync(dto, 1, "Test User", "test@example.com")).ReturnsAsync((expectedResponse, null));
             // Act
             var result = await _controller.Create(dto);
             // Assert
