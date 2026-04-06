@@ -12,24 +12,24 @@
           <div class="search-bar">
             <div class="form-group">
               <label class="form-label">From</label>
-              <select class="form-control" [(ngModel)]="origin">
-                <option value="">Select origin</option>
+              <input class="form-control" list="airport-list-origin" [(ngModel)]="origin" placeholder="Type IATA code or choose origin" />
+              <datalist id="airport-list-origin">
                 @for(a of airports(); track a.code) {
-                  <option [value]="a.code">{{ a.city }} ({{ a.code }})</option>
+                  <option value="{{ a.code }}">{{ a.city }} ({{ a.code }})</option>
                 }
-              </select>
+              </datalist>
             </div>
 
             <button class="swap-btn" (click)="swap()" title="Swap airports">⇄</button>
 
             <div class="form-group">
               <label class="form-label">To</label>
-              <select class="form-control" [(ngModel)]="destination">
-                <option value="">Select destination</option>
+              <input class="form-control" list="airport-list-destination" [(ngModel)]="destination" placeholder="Type IATA code or choose destination" />
+              <datalist id="airport-list-destination">
                 @for(a of airports(); track a.code) {
-                  <option [value]="a.code">{{ a.city }} ({{ a.code }})</option>
+                  <option value="{{ a.code }}">{{ a.city }} ({{ a.code }})</option>
                 }
-              </select>
+              </datalist>
             </div>
 
             <div class="form-group">
@@ -57,7 +57,7 @@
               </select>
             </div>
 
-            <button class="btn btn-rust" (click)="search()" [disabled]="!origin || !destination || !date || loading()">
+            <button class="btn btn-rust" (click)="search()" [disabled]="!origin?.trim() || !destination?.trim() || !date || loading()">
               {{ loading() ? '...' : 'Search' }}
             </button>
           </div>

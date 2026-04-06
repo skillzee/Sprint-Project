@@ -55,24 +55,27 @@ export class FlightsComponent {
   }
 
   search(){
-    if(!this.origin || !this.destination || !this.date){
+    const originValue = this.origin?.trim();
+    const destinationValue = this.destination?.trim();
+
+    if(!originValue || !destinationValue || !this.date){
       return;
-    } 
+    }
 
-
-    if(this.origin == this.destination){
+    if(originValue.toUpperCase() === destinationValue.toUpperCase()){
       this.searchError.set("Origin and Destination cannot be the same");
       return;
     }
 
+    this.origin = originValue;
+    this.destination = destinationValue;
     this.searchError.set('');
     this.loading.set(true);
     this.hasSearched.set(true);
 
-
     this.flightService.searchFlights(this.origin, this.destination, this.date, this.adults, this.cabin).subscribe({
       next: f=> {
-        this.flights.set(f),
+        this.flights.set(f);
         this.loading.set(false);
       },
       error: ()=>{
