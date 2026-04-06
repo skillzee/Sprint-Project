@@ -8,6 +8,7 @@ public interface IBookingRepository
     Task<IEnumerable<Models.Booking>> GetByUserIdAsync(int  userId);
     Task<Models.Booking?> GetByIdAsync(int id);
     Task AddAsync(Models.Booking booking);
+    Task<bool> HasOverlappingBookingAsync(int userId, int roomId, DateTime checkInDate, DateTime checkOutDate);
     Task SaveChangesAsync();
 
 

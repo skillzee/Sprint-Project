@@ -33,6 +33,16 @@ namespace TravelApp.Services.Booking.Repositories
             return await _db.Bookings.Where(t => t.UserId == userId).OrderByDescending(item => item.CreatedAt).ToListAsync();
         }
 
+        public async Task<bool> HasOverlappingBookingAsync(int userId, int roomId, DateTime checkInDate, DateTime checkOutDate)
+        {
+            return await _db.Bookings.AnyAsync(b =>
+                b.UserId == userId &&
+                b.RoomId == roomId &&
+                b.Status == "Confirmed" &&
+                b.CheckInDate < checkOutDate &&
+                b.CheckOutDate > checkInDate);
+        }
+
         public async Task SaveChangesAsync()
         {
             await _db.SaveChangesAsync();

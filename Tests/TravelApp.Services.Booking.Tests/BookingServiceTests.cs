@@ -54,6 +54,23 @@ public class BookingServiceTests
     }
 
     [Fact]
+    public async Task CreateBookingAsync_ShouldReturnNull_WhenDuplicateBookingExists()
+    {
+        // Arrange
+        var dto = new CreateBookingDto(1, "Deluxe", "Hotel", DateTime.Today.AddDays(1), DateTime.Today.AddDays(3), 100);
+        _repoMock.Setup(r => r.HasOverlappingBookingAsync(1, dto.RoomId, dto.CheckInDate, dto.CheckOutDate)).ReturnsAsync(true);
+
+        // Act
+        var result = await _service.CreateBookingAsync(dto, 1, "User", "user@test.com");
+
+        // Assert
+        result.Should().BeNull();
+        _repoMock.Verify(r => r.AddAsync(It.IsAny<Models.Booking>()), Times.Never);
+        _repoMock.Verify(r => r.SaveChangesAsync(), Times.Never);
+        _busMock.Verify(b => b.Publish(It.IsAny<BookingConfirmedEvent>(), default), Times.Never);
+    }
+
+    [Fact]
     public async Task CancelBookingAsync_ShouldReturnFalse_WhenBookingNotFound()
     {
         //Arrange

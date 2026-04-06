@@ -44,7 +44,14 @@ namespace TravelApp.Services.Booking.Services
             {
                 return null;
             }
-            // 2. Business Logic: Calculations & Ref
+            // 2. Business Logic: Duplicate booking prevention
+            var hasOverlap = await _repo.HasOverlappingBookingAsync(userId, dto.RoomId, dto.CheckInDate, dto.CheckOutDate);
+            if (hasOverlap)
+            {
+                return null;
+            }
+
+            // 3. Business Logic: Calculations & Ref
             var nights = (dto.CheckOutDate - dto.CheckInDate).Days;
             var total = nights * dto.PricePerNight;
             var bookingRef = $"STY-{DateTime.UtcNow.Year}-{Random.Shared.Next(100000, 999999)}";
