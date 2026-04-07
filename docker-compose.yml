@@ -136,6 +136,7 @@ services:
       - ASPNETCORE_URLS=http://*:5006
       - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=StayEasy_TripDB;User Id=sa;Password=SuperSecretPassw0rd!;TrustServerCertificate=True;
       - ConnectionStrings__Redis=redis:6379
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
     ports:
       - "5006:5006"
     depends_on:
