@@ -1,0 +1,165 @@
+version: '3.8'
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: travelapp_sqlserver
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=SuperSecretPassw0rd!
+    ports:
+      - "1433:1433"
+    networks:
+      - travelapp_net
+
+  redis:
+    image: redis:alpine
+    container_name: travelapp_redis
+    ports:
+      - "6379:6379"
+    networks:
+      - travelapp_net
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: travelapp_rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - travelapp_net
+
+  gateway:
+    image: skillzee/travelapp-gateway:latest
+    build:
+      context: .
+      dockerfile: Gateway/TravelApp.Gateway/Dockerfile
+    container_name: travelapp_gateway
+    ports:
+      - "5000:8080" # Expose gateway on host:5000 -> container:8080 (matches ocelot BaseUrl)
+    depends_on:
+      - auth
+      - booking
+      - flight
+      - hotel
+      - trip
+      - notification
+    networks:
+      - travelapp_net
+
+  auth:
+    image: skillzee/travelapp-auth:latest
+    build:
+      context: .
+      dockerfile: Services/TravelApp.Services.Auth/Dockerfile
+    container_name: travelapp_auth
+    environment:
+      - ASPNETCORE_URLS=http://*:5001
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=TravelApp_AuthDb;User Id=sa;Password=SuperSecretPassw0rd!;TrustServerCertificate=True;
+    ports:
+      - "5001:5001"
+    depends_on:
+      - sqlserver
+    networks:
+      - travelapp_net
+
+  booking:
+    image: skillzee/travelapp-booking:latest
+    build:
+      context: .
+      dockerfile: Services/TravelApp.Services.Booking/Dockerfile
+    container_name: travelapp_booking
+    environment:
+      - ASPNETCORE_URLS=http://*:5112
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=TravelApp_BookingDb;User Id=sa;Password=SuperSecretPassw0rd!;TrustServerCertificate=True;
+      - RabbitMQ__Host=rabbitmq
+    ports:
+      - "5112:5112"
+    depends_on:
+      - sqlserver
+      - rabbitmq
+    networks:
+      - travelapp_net
+
+  flight:
+    image: skillzee/travelapp-flight:latest
+    build:
+      context: .
+      dockerfile: Services/TravelApp.Services.Flight/Dockerfile
+    container_name: travelapp_flight
+    environment:
+      - ASPNETCORE_URLS=http://*:5007
+      - ConnectionStrings__Redis=redis:6379
+    ports:
+      - "5007:5007"
+    depends_on:
+      - redis
+    networks:
+      - travelapp_net
+
+  hotel:
+    image: skillzee/travelapp-hotel:latest
+    build:
+      context: .
+      dockerfile: Services/TravelApp.Services.Hotel/Dockerfile
+    container_name: travelapp_hotel
+    environment:
+      - ASPNETCORE_URLS=http://*:5165
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=TravelApp_HotelDb;User Id=sa;Password=SuperSecretPassw0rd!;TrustServerCertificate=True;
+      - ConnectionStrings__Redis=redis:6379
+    ports:
+      - "5165:5165"
+    depends_on:
+      - sqlserver
+      - redis
+    networks:
+      - travelapp_net
+
+  trip:
+    image: skillzee/travelapp-trip:latest
+    build:
+      context: .
+      dockerfile: Services/TravelApp.Services.Trip/Dockerfile
+    container_name: travelapp_trip
+    environment:
+      - ASPNETCORE_URLS=http://*:5006
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=StayEasy_TripDB;User Id=sa;Password=SuperSecretPassw0rd!;TrustServerCertificate=True;
+      - ConnectionStrings__Redis=redis:6379
+    ports:
+      - "5006:5006"
+    depends_on:
+      - sqlserver
+      - redis
+    networks:
+      - travelapp_net
+
+  notification:
+    image: skillzee/travelapp-notification:latest
+    build:
+      context: .
+      dockerfile: Services/TravelApp.Services.Notification/Dockerfile
+    container_name: travelapp_notification
+    environment:
+      - ASPNETCORE_URLS=http://*:8080
+      - RabbitMQ__Host=rabbitmq
+    ports:
+      - "5093:8080" # Gateway expects notification at port 5093 downstream; map host 5093 to container 8080
+    depends_on:
+      - rabbitmq
+    networks:
+      - travelapp_net
+
+  web:
+    image: skillzee/travelapp-web:latest
+    build:
+      context: .
+      dockerfile: Web/travel-app-web/Dockerfile
+    container_name: travelapp_web
+    ports:
+      - "80:80"
+    networks:
+      - travelapp_net
+
+networks:
+  travelapp_net:
+    driver: bridge
