@@ -17,7 +17,14 @@ Env.Load();
 
 builder.Services.AddControllers();
 builder.Services.AddDbContext<TripDbContext>(o =>
-    o.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+    o.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"),
+    sqlServerOptionsAction: sqlOptions =>
+    {
+        sqlOptions.EnableRetryOnFailure(
+            maxRetryCount: 10,
+            maxRetryDelay: TimeSpan.FromSeconds(30),
+            errorNumbersToAdd: null);
+    })
 );
 builder.Services.AddHttpClient<IGeminiService, GeminiService>();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

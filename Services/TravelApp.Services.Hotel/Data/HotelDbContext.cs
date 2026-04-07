@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using TravelApp.Services.Hotel.Models;
 
 namespace TravelApp.Services.Hotel.Data
@@ -20,6 +20,7 @@ namespace TravelApp.Services.Hotel.Data
                 new Models.Hotel { Id = 4, Name = "Himalayan Retreat", City = "Manali", Address = "Old Manali Road, Manali", Description = "Cozy mountain hotel with panoramic Himalayan views", StarRating = 3, Amenities = "Restaurant,WiFi,Bonfire" },
                 new Models.Hotel { Id = 5, Name = "Heritage Haveli", City = "Jaipur", Address = "Pink City, Jaipur", Description = "Traditional Rajasthani haveli turned luxury hotel", StarRating = 5, Amenities = "Pool,Spa,Restaurant,Cultural Shows,WiFi" }
             );
+            mb.Entity<Models.Room>().Property(r => r.PricePerNight).HasColumnType("decimal(18,2)");
             mb.Entity<Models.Room>().HasData(
                 new Models.Room { Id = 1, HotelId = 1, Type = "Deluxe King", PricePerNight = 12000, IsAvailable = true, MaxOccupancy = 2, Description = "Spacious room with city view" },
                 new Models.Room { Id = 2, HotelId = 1, Type = "Presidential Suite", PricePerNight = 45000, IsAvailable = true, MaxOccupancy = 4, Description = "Top-floor suite with panoramic Delhi views" },
