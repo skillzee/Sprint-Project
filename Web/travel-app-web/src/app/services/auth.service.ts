@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { tap } from 'rxjs';
+import { SocialAuthService } from '@abacritt/angularx-social-login';
 import { User } from '../models/models';
 
 @Injectable({
@@ -12,7 +13,7 @@ export class AuthService {
   currentUser = signal<User | null>(null);
 
 
-  constructor(private http: HttpClient, private router: Router) 
+  constructor(private http: HttpClient, private router: Router, private socialAuthService: SocialAuthService) 
   { 
     const saved = localStorage.getItem('travel_user');
     if(saved){
@@ -37,6 +38,7 @@ export class AuthService {
   logout(){
     localStorage.removeItem('travel_user');
     this.currentUser.set(null);
+    this.socialAuthService.signOut().catch(() => {});
     this.router.navigate(['/login']);
   }
 
