@@ -1,4 +1,4 @@
-﻿using MassTransit;
+using MassTransit;
 using TravelApp.Services.Booking.DTOs;
 using TravelApp.Services.Booking.Interfaces;
 using TravelApp.Shared;
@@ -9,11 +9,13 @@ namespace TravelApp.Services.Booking.Services
     {
         private readonly IBookingRepository _repo;
         private readonly IPublishEndpoint _bus;
+        private readonly ILogger<BookingService> _logger;
 
-        public BookingService(IBookingRepository repo, IPublishEndpoint bus)
+        public BookingService(IBookingRepository repo, IPublishEndpoint bus, ILogger<BookingService> logger)
         {
             _repo = repo;
             _bus = bus;
+            _logger = logger;
         }
 
 
@@ -39,15 +41,24 @@ namespace TravelApp.Services.Booking.Services
 
         public async Task<(BookingDto? result, string? errorMessage)> CreateBookingAsync(CreateBookingDto dto, int userId, string userName, string userEmai)
         {
+            // Normalize dates to Date part only to avoid time-of-day overlap issues
+            var checkIn = dto.CheckInDate.Date;
+            var checkOut = dto.CheckOutDate.Date;
+
+            _logger.LogInformation("Attempting to create booking for User: {UserId}, Room: {RoomId}, Dates: {CheckIn} to {CheckOut}", 
+                userId, dto.RoomId, checkIn.ToShortDateString(), checkOut.ToShortDateString());
+
             // 1. Business Validation
-            if (dto.CheckInDate < DateTime.Today || dto.CheckOutDate <= dto.CheckInDate)
+            if (checkIn < DateTime.Today || checkOut <= checkIn)
             {
                 return (null, "Invalid booking dates");
             }
             // 2. Business Logic: Duplicate booking prevention
-            var hasOverlap = await _repo.HasOverlappingBookingAsync(userId, dto.RoomId, dto.CheckInDate, dto.CheckOutDate);
+            var hasOverlap = await _repo.HasOverlappingBookingAsync(userId, dto.RoomId, checkIn, checkOut);
             if (hasOverlap)
             {
+                _logger.LogWarning("Overlap detected for User: {UserId}, Room: {RoomId} on dates {CheckIn}-{CheckOut}", 
+                    userId, dto.RoomId, checkIn.ToShortDateString(), checkOut.ToShortDateString());
                 return (null, "Booking with same date already exists by the user");
             }
 

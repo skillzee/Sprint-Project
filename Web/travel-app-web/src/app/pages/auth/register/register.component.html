@@ -23,6 +23,14 @@
           <button class="btn btn-rust btn-lg auth-submit" type="submit" [disabled]="loading()">
             {{ loading() ? 'Creating account...' : 'Join VoyageIn' }}
           </button>
+
+          <div class="divider">
+            <span>OR</span>
+          </div>
+
+          <div class="google-login-row">
+            <asl-google-signin-button type='standard' size='large' [width]="100"></asl-google-signin-button>
+          </div>
         </form>
 
         <p class="auth-footer">Already have an account? <a routerLink="/login">Sign in →</a></p>

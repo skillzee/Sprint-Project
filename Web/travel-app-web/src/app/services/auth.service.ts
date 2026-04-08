@@ -30,6 +30,10 @@ export class AuthService {
     return this.http.post(`${this.api}/login`, {email, password}).pipe(tap(user => this.setUser(user)));
   }
 
+  googleLogin(idToken: string){
+    return this.http.post(`${this.api}/google-login`, {idToken}).pipe(tap(user => this.setUser(user)));
+  }
+
   logout(){
     localStorage.removeItem('travel_user');
     this.currentUser.set(null);

@@ -57,7 +57,7 @@
               </select>
             </div>
 
-            <button class="btn btn-rust" (click)="search()" [disabled]="!origin?.trim() || !destination?.trim() || !date || loading()">
+            <button class="btn btn-rust" (click)="search()" [disabled]="!origin.trim() || !destination.trim() || !date || loading()">
               {{ loading() ? '...' : 'Search' }}
             </button>
           </div>

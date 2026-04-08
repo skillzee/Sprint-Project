@@ -19,7 +19,7 @@ public class EmailService : IEmailService
     public async Task SendEmailAsync(string to, string subject, string body)
     {
         var email = new MimeMessage();
-        email.From.Add(MailboxAddress.Parse(_config["SmtpSettings:SenderEmail"]));
+        email.From.Add(new MailboxAddress(_config["SmtpSettings:SenderName"], _config["SmtpSettings:SenderEmail"]));
         email.To.Add(MailboxAddress.Parse(to));
         email.Subject = subject;
         email.Body = new TextPart(TextFormat.Html) { Text = body };

@@ -38,3 +38,24 @@
       .auth-card { flex: none; padding: 40px 24px; }
       .auth-visual { display: none; }
     }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      text-align: center;
+      margin: 24px 0;
+      color: var(--gray);
+      font-size: 0.8rem;
+    }
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      border-bottom: 1px solid rgba(0,0,0,0.1);
+    }
+    .divider:not(:empty)::before { margin-right: .5em; }
+    .divider:not(:empty)::after { margin-left: .5em; }
+
+    .google-login-row {
+      display: flex;
+      justify-content: center;
+    }

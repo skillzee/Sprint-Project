@@ -76,8 +76,6 @@ export class HotelDetailComponent {
   confirmBooking() {
     const room = this.selectedRoom(); const h = this.hotel();
     if (!room || !h || !this.checkIn || !this.checkOut || this.nightCount() <= 0) return;
-    this.bookingLoading.set(true); 
-    this.bookingError.set('');
 
     this.bookingService.create({
       roomId: room.id, roomType: room.type, hotelName: h.name,
