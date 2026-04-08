@@ -26,7 +26,7 @@ public class AuthServiceTests
         _configMock.Setup(c => c.GetSection("JwtSettings")).Returns(mockSection.Object);
         _jwtHelper = new JwtHelper(_configMock.Object);
 
-        _authService = new AuthService(_authRepoMock.Object, _jwtHelper);
+        _authService = new AuthService(_authRepoMock.Object, _jwtHelper, _configMock.Object);
     }
 
     [Fact]

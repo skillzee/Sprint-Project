@@ -1,4 +1,4 @@
-using MassTransit;
+﻿using MassTransit;
 using TravelApp.Services.Booking.DTOs;
 using TravelApp.Services.Booking.Interfaces;
 using TravelApp.Shared;
@@ -9,13 +9,11 @@ namespace TravelApp.Services.Booking.Services
     {
         private readonly IBookingRepository _repo;
         private readonly IPublishEndpoint _bus;
-        private readonly ILogger<BookingService> _logger;
 
-        public BookingService(IBookingRepository repo, IPublishEndpoint bus, ILogger<BookingService> logger)
+        public BookingService(IBookingRepository repo, IPublishEndpoint bus)
         {
             _repo = repo;
             _bus = bus;
-            _logger = logger;
         }
 
 
@@ -45,9 +43,6 @@ namespace TravelApp.Services.Booking.Services
             var checkIn = dto.CheckInDate.Date;
             var checkOut = dto.CheckOutDate.Date;
 
-            _logger.LogInformation("Attempting to create booking for User: {UserId}, Room: {RoomId}, Dates: {CheckIn} to {CheckOut}", 
-                userId, dto.RoomId, checkIn.ToShortDateString(), checkOut.ToShortDateString());
-
             // 1. Business Validation
             if (checkIn < DateTime.Today || checkOut <= checkIn)
             {
@@ -57,8 +52,6 @@ namespace TravelApp.Services.Booking.Services
             var hasOverlap = await _repo.HasOverlappingBookingAsync(userId, dto.RoomId, checkIn, checkOut);
             if (hasOverlap)
             {
-                _logger.LogWarning("Overlap detected for User: {UserId}, Room: {RoomId} on dates {CheckIn}-{CheckOut}", 
-                    userId, dto.RoomId, checkIn.ToShortDateString(), checkOut.ToShortDateString());
                 return (null, "Booking with same date already exists by the user");
             }
 
