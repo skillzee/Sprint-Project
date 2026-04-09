@@ -102,8 +102,9 @@ export class TripsComponent {
         this.trips.update(ts => ts.map(t => t.id === updated.id ? updated : t));
         this.isGenerating.set(false);
       },
-      error: () => {
-        this.generateError.set('AI generation failed. Check your Gemini API key and try again.');
+      error: (err) => {
+        const msg = err?.error?.message || 'AI generation failed. Please try again.';
+        this.generateError.set(msg);
         this.isGenerating.set(false);
       }
     })

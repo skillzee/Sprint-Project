@@ -60,16 +60,17 @@ namespace TravelApp.Services.Trip.Controllers
         public async Task<ActionResult<TripDto>> GenerateItinerary(GenerateItineraryDto dto)
         {
             int userId = GetUserId();
-            var result = await _service.GenerateItineraryAsync(dto, userId);
-
-            if(result == null)
+            try
             {
-                return BadRequest();
+                var result = await _service.GenerateItineraryAsync(dto, userId);
+                if (result == null)
+                    return BadRequest(new { message = "Trip not found." });
+                return Ok(result);
             }
-
-            return Ok(result);
-
-
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
 
