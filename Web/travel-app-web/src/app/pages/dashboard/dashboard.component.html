@@ -9,8 +9,11 @@
 
       <div class="section container">
         <div class="admin-tabs">
-          <button class="tab-btn" [class.active]="activeTab() === 'bookings'" (click)="activeTab.set('bookings')">Bookings & Revenue</button>
-          <button class="tab-btn" [class.active]="activeTab() === 'hotels'" (click)="activeTab.set('hotels')">Manage Hotels</button>
+          <button class="tab-btn" [class.active]="activeTab() === 'bookings'" (click)="switchTab('bookings')">Bookings & Revenue</button>
+          <button class="tab-btn" [class.active]="activeTab() === 'hotels'" (click)="switchTab('hotels')">Manage Hotels</button>
+          @if(auth.isAdmin()) {
+            <button class="tab-btn" [class.active]="activeTab() === 'approvals'" (click)="switchTab('approvals')">Approvals</button>
+          }
         </div>
 
         @if(loading()) { <div class="loading"><div class="spinner"></div></div> }
@@ -184,6 +187,52 @@
                 }
               </div>
             </div>
+          }
+
+          @if(activeTab() === 'approvals') {
+            @if(approvalsLoading()) {
+              <div class="loading"><div class="spinner"></div></div>
+            } @else {
+              <h3 style="font-family:var(--font-display);margin-bottom:20px">Pending Hotels</h3>
+              @if(pendingHotels().length === 0) {
+                <p style="color:var(--gray)">No pending hotel submissions.</p>
+              } @else {
+                @for(hotel of pendingHotels(); track hotel.id) {
+                  <div class="card" style="margin-bottom:16px;padding:20px">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+                      <div>
+                        <h4 style="margin:0 0 4px;font-family:var(--font-display)">{{ hotel.name }}</h4>
+                        <p style="margin:0;font-size:0.85rem;color:var(--gray)">📍 {{ hotel.city }} · Owner: {{ hotel.ownerName }} ({{ hotel.ownerEmail }})</p>
+                      </div>
+                      <div style="display:flex;gap:8px">
+                        <button class="btn btn-sm" style="background:#27ae60;color:#fff;border:none" (click)="approveHotel(hotel.id)">Approve</button>
+                        <button class="btn btn-sm" style="background:#e74c3c;color:#fff;border:none" (click)="rejectHotel(hotel.id)">Reject</button>
+                      </div>
+                    </div>
+                  </div>
+                }
+              }
+
+              <h3 style="font-family:var(--font-display);margin:32px 0 20px">Pending Rooms</h3>
+              @if(pendingRooms().length === 0) {
+                <p style="color:var(--gray)">No pending room submissions.</p>
+              } @else {
+                @for(room of pendingRooms(); track room.id) {
+                  <div class="card" style="margin-bottom:16px;padding:20px">
+                    <div style="display:flex;justify-content:space-between;align-items:center">
+                      <div>
+                        <h4 style="margin:0 0 4px;font-family:var(--font-display)">{{ room.type }}</h4>
+                        <p style="margin:0;font-size:0.85rem;color:var(--gray)">Hotel: {{ room.hotel?.name ?? 'Hotel #' + room.hotelId }} · ₹{{ room.pricePerNight }}/night</p>
+                      </div>
+                      <div style="display:flex;gap:8px">
+                        <button class="btn btn-sm" style="background:#27ae60;color:#fff;border:none" (click)="approveRoom(room.hotelId, room.id)">Approve</button>
+                        <button class="btn btn-sm" style="background:#e74c3c;color:#fff;border:none" (click)="rejectRoom(room.hotelId, room.id)">Reject</button>
+                      </div>
+                    </div>
+                  </div>
+                }
+              }
+            }
           }
         }
       </div>

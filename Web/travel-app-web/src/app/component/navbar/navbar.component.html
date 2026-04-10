@@ -15,6 +15,9 @@
             @if(auth.isAdmin()) {
               <a routerLink="/dashboard" routerLinkActive="active" (click)="closeMenu()">Dashboard</a>
             }
+            @if(auth.isHotelManager()) {
+              <a routerLink="/hotel-manager" routerLinkActive="active" (click)="closeMenu()">My Properties</a>
+            }
           }
         </div>
 

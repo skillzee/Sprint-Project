@@ -21,3 +21,11 @@ public record AuthResponseDto(
     string Role,
     string Token
 );
+
+/// <summary>Discriminated union for RegisterAsync outcomes.</summary>
+public abstract record RegisterResult
+{
+    public sealed record Success(AuthResponseDto Response) : RegisterResult;
+    public sealed record EmailAlreadyExists() : RegisterResult;
+    public sealed record RoleForbidden(string Role) : RegisterResult;
+}

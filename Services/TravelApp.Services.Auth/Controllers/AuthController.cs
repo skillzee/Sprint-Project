@@ -19,12 +19,13 @@ public class AuthController : ControllerBase
     public async Task<ActionResult<AuthResponseDto>> Register(RegisterDto dto)
     {
         var result = await _authService.RegisterAsync(dto);
-        if (result == null)
+        return result switch
         {
-            return BadRequest(new { message = "Registration failed. Email might already exist." });
-        }
-
-        return Ok(result);
+            RegisterResult.Success s => Ok(s.Response),
+            RegisterResult.RoleForbidden f => BadRequest(new { message = $"Role '{f.Role}' cannot be self-assigned." }),
+            RegisterResult.EmailAlreadyExists => BadRequest(new { message = "Registration failed. Email might already exist." }),
+            _ => BadRequest(new { message = "Registration failed." })
+        };
     }
 
     [HttpPost("login")]

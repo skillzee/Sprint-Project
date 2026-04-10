@@ -80,6 +80,7 @@ services:
       - ASPNETCORE_URLS=http://*:5112
       - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=TravelApp_BookingDb;User Id=sa;Password=SuperSecretPassw0rd!;TrustServerCertificate=True;
       - RabbitMQ__Host=rabbitmq
+      - HotelService__BaseUrl=http://hotel:5165
     ports:
       - "5112:5112"
     depends_on:
@@ -116,12 +117,15 @@ services:
       - ASPNETCORE_URLS=http://*:5165
       - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=TravelApp_HotelDb;User Id=sa;Password=SuperSecretPassw0rd!;TrustServerCertificate=True;
       - ConnectionStrings__Redis=redis:6379
+      - RabbitMQ__Host=rabbitmq
     ports:
       - "5165:5165"
     depends_on:
       sqlserver:
         condition: service_healthy
       redis:
+        condition: service_started
+      rabbitmq:
         condition: service_started
     networks:
       - travelapp_net

@@ -13,6 +13,8 @@ builder.Services.AddMassTransit(x =>
     // Add consumers
     x.AddConsumer<BookingConfirmedConsumer>();
     x.AddConsumer<BookingCancelledConsumer>();
+    x.AddConsumer<HotelApprovedConsumer>();
+    x.AddConsumer<HotelRejectedConsumer>();
 
     x.UsingRabbitMq((context, cfg) =>
     {

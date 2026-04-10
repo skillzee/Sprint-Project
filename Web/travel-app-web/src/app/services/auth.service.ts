@@ -54,6 +54,10 @@ export class AuthService {
     return this.currentUser()?.role === 'Admin';
   }
 
+  isHotelManager(){
+    return this.currentUser()?.role === 'HotelManager';
+  }
+
 
 
   private setUser(user: any){

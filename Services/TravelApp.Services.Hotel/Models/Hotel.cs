@@ -14,7 +14,12 @@ namespace TravelApp.Services.Hotel.Models
         public string Amenities { get; set; } = "";
         public List<Room> Rooms { get; set; } = new();
 
-
+        // Ownership & approval
+        public int OwnerId { get; set; } = 0;
+        public string OwnerEmail { get; set; } = "";
+        public string OwnerName { get; set; } = "";
+        public string ApprovalStatus { get; set; } = "Pending";
+        public string? RejectionReason { get; set; }
 
     }
 
@@ -31,6 +36,9 @@ namespace TravelApp.Services.Hotel.Models
         public int MaxOccupancy { get; set; }
         public string Description { get; set; } = "";
         public bool IsAvailable { get; set; } = true;
+
+        // Approval
+        public string ApprovalStatus { get; set; } = "Pending";
 
     }
 }

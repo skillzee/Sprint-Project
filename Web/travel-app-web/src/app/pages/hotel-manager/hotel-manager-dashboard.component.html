@@ -1,0 +1,150 @@
+<div style="padding-top:68px">
+  <div class="page-hero">
+    <div class="container">
+      <div class="hero-eyebrow">✦ Hotel Manager</div>
+      <h1>My Properties</h1>
+      <p>Submit and manage your hotel listings. New submissions are reviewed by our team before going live.</p>
+    </div>
+  </div>
+
+  <div class="section container">
+
+    <div style="display:flex;justify-content:flex-end;margin-bottom:24px">
+      <button class="btn btn-rust" (click)="toggleHotelForm()">
+        {{ showHotelForm() ? '✕ Cancel' : '+ Submit New Hotel' }}
+      </button>
+    </div>
+
+    @if(showHotelForm()) {
+      <div class="card card-body fade-up" style="margin-bottom:32px">
+        <h3 style="font-family:var(--font-display);margin-bottom:20px">New Hotel Submission</h3>
+        <div class="form-grid">
+          <div class="form-group span-2">
+            <label class="form-label">Property Name</label>
+            <input class="form-control" [(ngModel)]="newHotel.name" placeholder="e.g. The Grand Alpine">
+          </div>
+          <div class="form-group">
+            <label class="form-label">City</label>
+            <input class="form-control" [(ngModel)]="newHotel.city" placeholder="e.g. Goa">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Star Rating</label>
+            <select class="form-control" [(ngModel)]="newHotel.starRating">
+              <option [ngValue]="1">1 Star</option>
+              <option [ngValue]="2">2 Stars</option>
+              <option [ngValue]="3">3 Stars</option>
+              <option [ngValue]="4">4 Stars</option>
+              <option [ngValue]="5">5 Stars</option>
+            </select>
+          </div>
+          <div class="form-group span-2">
+            <label class="form-label">Address</label>
+            <input class="form-control" [(ngModel)]="newHotel.address" placeholder="Full address">
+          </div>
+          <div class="form-group span-2">
+            <label class="form-label">Description</label>
+            <textarea class="form-control" [(ngModel)]="newHotel.description" rows="3" placeholder="Describe your property..."></textarea>
+          </div>
+          <div class="form-group span-2">
+            <label class="form-label">Amenities</label>
+            <input class="form-control" [(ngModel)]="newHotel.amenities" placeholder="Pool, Spa, WiFi, Gym">
+          </div>
+        </div>
+        @if(hotelError()) {
+          <div class="error-msg" style="margin-top:12px">{{ hotelError() }}</div>
+        }
+        <button class="btn btn-rust" style="margin-top:20px;width:100%;justify-content:center" [disabled]="hotelSaving()" (click)="createHotel()">
+          {{ hotelSaving() ? 'Submitting...' : 'Submit for Approval' }}
+        </button>
+      </div>
+    }
+
+    @if(loading()) {
+      <div class="loading"><div class="spinner"></div></div>
+    } @else if(hotels().length === 0) {
+      <div class="empty-hint" style="text-align:center;padding:60px 0">
+        <span style="font-size:3rem">🏨</span>
+        <p style="margin-top:16px;color:var(--gray)">No hotels yet. Submit your first property above.</p>
+      </div>
+    } @else {
+      <div class="hotels-list">
+        @for(hotel of hotels(); track hotel.id) {
+          <div class="card hotel-admin-card" style="margin-bottom:24px">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+              <div>
+                <h3 style="font-family:var(--font-display);font-size:1.2rem;margin-bottom:4px">{{ hotel.name }}</h3>
+                <p style="font-size:0.85rem;color:var(--gray);margin:0">📍 {{ hotel.city }} · ⭐ {{ hotel.starRating }}</p>
+              </div>
+              <span class="badge" [class]="statusClass(hotel.approvalStatus)">{{ hotel.approvalStatus }}</span>
+            </div>
+
+            @if(hotel.approvalStatus === 'Rejected') {
+              <div class="error-msg" style="margin-bottom:12px">This hotel was not approved. Please review and resubmit.</div>
+            }
+
+            <div style="margin-top:16px">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                <h4 style="margin:0;font-size:0.95rem">Rooms ({{ hotel.rooms.length }})</h4>
+                @if(hotel.approvalStatus === 'Approved') {
+                  <button class="btn btn-outline btn-sm" (click)="selectedHotelId.set(selectedHotelId() === hotel.id ? null : hotel.id)">
+                    {{ selectedHotelId() === hotel.id ? '✕ Cancel' : '+ Add Room' }}
+                  </button>
+                }
+              </div>
+
+              @if(hotel.rooms.length > 0) {
+                <div style="display:flex;flex-direction:column;gap:8px">
+                  @for(room of hotel.rooms; track room.id) {
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--sand-light);border-radius:8px">
+                      <div>
+                        <span style="font-weight:600;font-size:0.9rem">{{ room.type }}</span>
+                        <span style="color:var(--gray);font-size:0.82rem;margin-left:12px">₹{{ room.pricePerNight }}/night · {{ room.maxOccupancy }} guests</span>
+                      </div>
+                      <span class="badge badge-sm" [class]="statusClass(room.approvalStatus)">{{ room.approvalStatus }}</span>
+                    </div>
+                  }
+                </div>
+              } @else {
+                <p style="font-size:0.85rem;color:var(--gray);margin:0">No rooms yet.</p>
+              }
+
+              @if(selectedHotelId() === hotel.id) {
+                <div class="add-room-form" style="margin-top:16px">
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+                    <div class="form-group" style="margin:0">
+                      <label class="form-label">Room Type</label>
+                      <input class="form-control" [(ngModel)]="newRoom.type" placeholder="e.g. Deluxe Suite">
+                    </div>
+                    <div class="form-group" style="margin:0">
+                      <label class="form-label">Price / Night (₹)</label>
+                      <input type="number" class="form-control" [(ngModel)]="newRoom.pricePerNight" placeholder="5000">
+                    </div>
+                    <div class="form-group" style="margin:0">
+                      <label class="form-label">Max Occupancy</label>
+                      <select class="form-control" [(ngModel)]="newRoom.maxOccupancy">
+                        <option [ngValue]="1">1 Guest</option>
+                        <option [ngValue]="2">2 Guests</option>
+                        <option [ngValue]="3">3 Guests</option>
+                        <option [ngValue]="4">4 Guests</option>
+                      </select>
+                    </div>
+                    <div class="form-group" style="margin:0">
+                      <label class="form-label">Description</label>
+                      <input class="form-control" [(ngModel)]="newRoom.description" placeholder="Brief description">
+                    </div>
+                  </div>
+                  @if(roomError()) {
+                    <div class="error-msg" style="margin-top:8px">{{ roomError() }}</div>
+                  }
+                  <button class="btn btn-rust" style="margin-top:16px;width:100%;justify-content:center" [disabled]="roomSaving()" (click)="addRoom(hotel.id)">
+                    {{ roomSaving() ? 'Submitting...' : 'Submit Room for Approval' }}
+                  </button>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>

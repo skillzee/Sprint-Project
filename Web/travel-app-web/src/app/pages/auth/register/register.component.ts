@@ -12,7 +12,7 @@ import { GoogleSigninButtonModule, SocialAuthService } from '@abacritt/angularx-
 })
 export class RegisterComponent {
 
-  name = ''; email = ''; password = '';
+  name = ''; email = ''; password = ''; role = 'Customer';
   loading = signal(false);
   error = signal(''); 
   success = signal('');
@@ -39,7 +39,7 @@ export class RegisterComponent {
   register() {
     this.loading.set(true);
     this.error.set('');
-    this.auth.register(this.name, this.email, this.password).subscribe({
+    this.auth.register(this.name, this.email, this.password, this.role).subscribe({
       next: () =>{
         this.success.set('Account created!');
         this.router.navigate(['/'])

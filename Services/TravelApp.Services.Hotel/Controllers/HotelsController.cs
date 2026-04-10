@@ -1,12 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using TravelApp.Services.Hotel.Data;
+using System.Security.Claims;
 using TravelApp.Services.Hotel.DTOs;
 using TravelApp.Services.Hotel.Interfaces;
-using TravelApp.Services.Hotel.Models;
 
 namespace TravelApp.Services.Hotel.Controllers
 {
@@ -14,90 +10,148 @@ namespace TravelApp.Services.Hotel.Controllers
     [ApiController]
     public class HotelsController : ControllerBase
     {
-
         private readonly IHotelService _hotelService;
+
         public HotelsController(IHotelService hotelService)
         {
             _hotelService = hotelService;
         }
 
+        // ── Public endpoints ──────────────────────────────────────────────────
+
         [HttpGet]
         public async Task<ActionResult<IEnumerable<HotelDto>>> GetAll([FromQuery] string? city)
         {
             var result = await _hotelService.GetHotelsAsync(city);
-
-            if(result == null)
-            {
-                return NotFound();
-            }
-
             return Ok(result);
         }
-
 
         [HttpGet("{id}")]
         public async Task<ActionResult<HotelDto>> Get(int id)
         {
             var result = await _hotelService.GetHotelByIdAsync(id);
-
-            if(result == null)
-            {
+            if (result == null)
                 return NotFound();
-            }
-
             return Ok(result);
         }
 
+        // ── Internal service-to-service endpoint ─────────────────────────────
+
+        [HttpGet("rooms/{roomId}/status")]
+        public async Task<ActionResult> GetRoomStatus(int roomId)
+        {
+            var room = await _hotelService.GetRoomStatusAsync(roomId);
+            if (room == null)
+                return NotFound();
+            return Ok(room);
+        }
+
+        // ── HotelManager endpoints ────────────────────────────────────────────
 
         [HttpPost]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "HotelManager")]
         public async Task<ActionResult> Create(CreateHotelDto dto)
         {
+            var ownerId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var ownerEmail = User.FindFirstValue(ClaimTypes.Email) ?? "";
+            var ownerName = User.FindFirstValue(ClaimTypes.Name) ?? "";
 
-            var result = await _hotelService.CreateHotelAsync(dto);
-
-            if(result == null)
-            {
-                return BadRequest();
-            }
-
+            var result = await _hotelService.CreateHotelAsync(dto, ownerId, ownerEmail, ownerName);
             return Ok(result);
-
-
         }
 
         [HttpPost("{id}/rooms")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "HotelManager")]
         public async Task<ActionResult> AddRoom(int id, CreateRoomDto dto)
         {
-            var result = await _hotelService.AddRoomToHotelAsync(id, dto);
+            var requestingUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var result = await _hotelService.AddRoomToHotelAsync(id, dto, requestingUserId);
 
-            if(result == null)
-            {
-                return BadRequest();    
-            }
+            if (result == null)
+                return Forbid();
 
             return Ok(result);
         }
+
+        [HttpGet("my")]
+        [Authorize(Roles = "HotelManager")]
+        public async Task<ActionResult<IEnumerable<HotelDto>>> GetMyHotels()
+        {
+            var ownerId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var result = await _hotelService.GetHotelsByOwnerAsync(ownerId);
+            return Ok(result);
+        }
+
+        // ── Admin endpoints ───────────────────────────────────────────────────
+
+        [HttpGet("pending")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<IEnumerable<HotelDto>>> GetPending()
+        {
+            var result = await _hotelService.GetPendingHotelsAsync();
+            return Ok(result);
+        }
+
+        [HttpGet("rooms/pending")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<IEnumerable<RoomDto>>> GetPendingRooms()
+        {
+            var result = await _hotelService.GetPendingRoomsAsync();
+            return Ok(result);
+        }
+
+        [HttpPut("{id}/approve")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<HotelDto>> ApproveHotel(int id)
+        {
+            var result = await _hotelService.ApproveHotelAsync(id);
+            if (result == null)
+                return NotFound();
+            return Ok(result);
+        }
+
+        [HttpPut("{id}/reject")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<HotelDto>> RejectHotel(int id, [FromBody] RejectDto dto)
+        {
+            var result = await _hotelService.RejectHotelAsync(id, dto.Reason);
+            if (result == null)
+                return NotFound();
+            return Ok(result);
+        }
+
+        [HttpPut("{hotelId}/rooms/{roomId}/approve")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<RoomDto>> ApproveRoom(int hotelId, int roomId)
+        {
+            var result = await _hotelService.ApproveRoomAsync(hotelId, roomId);
+            if (result == null)
+                return NotFound();
+            return Ok(result);
+        }
+
+        [HttpPut("{hotelId}/rooms/{roomId}/reject")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<RoomDto>> RejectRoom(int hotelId, int roomId)
+        {
+            var result = await _hotelService.RejectRoomAsync(hotelId, roomId);
+            if (result == null)
+                return NotFound();
+            return Ok(result);
+        }
+
+        // ── Existing Admin endpoint ───────────────────────────────────────────
 
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult> Delete(int id)
         {
             var result = await _hotelService.DeleteHotelAsync(id);
-
-            if(result == false)
-            {
+            if (!result)
                 return BadRequest();
-            }
-
             return Ok();
         }
-
-
-
-
-
-
     }
+
+    public record RejectDto(string? Reason);
 }

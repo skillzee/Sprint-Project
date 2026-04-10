@@ -8,7 +8,11 @@
      string Description,
      double StarRating,
      string Amenities,
-     List<RoomDto> Rooms
+     List<RoomDto> Rooms,
+     int OwnerId,
+     string OwnerEmail,
+     string OwnerName,
+     string ApprovalStatus
  );
 
     public record RoomDto(
@@ -18,7 +22,8 @@
         decimal PricePerNight,
         int MaxOccupancy,
         bool IsAvailable,
-        string Description
+        string Description,
+        string ApprovalStatus
     );
 
 

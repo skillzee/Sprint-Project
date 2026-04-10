@@ -1,4 +1,5 @@
 ﻿using MassTransit;
+using TravelApp.Services.Booking.Clients;
 using TravelApp.Services.Booking.DTOs;
 using TravelApp.Services.Booking.Interfaces;
 using TravelApp.Shared;
@@ -9,11 +10,13 @@ namespace TravelApp.Services.Booking.Services
     {
         private readonly IBookingRepository _repo;
         private readonly IPublishEndpoint _bus;
+        private readonly IHotelClient _hotelClient;
 
-        public BookingService(IBookingRepository repo, IPublishEndpoint bus)
+        public BookingService(IBookingRepository repo, IPublishEndpoint bus, IHotelClient hotelClient)
         {
             _repo = repo;
             _bus = bus;
+            _hotelClient = hotelClient;
         }
 
 
@@ -39,6 +42,11 @@ namespace TravelApp.Services.Booking.Services
 
         public async Task<(BookingDto? result, string? errorMessage)> CreateBookingAsync(CreateBookingDto dto, int userId, string userName, string userEmai)
         {
+            // 0. Room approval check (fail-safe: treat unreachable Hotel service as unavailable)
+            var room = await _hotelClient.GetRoomAsync(dto.RoomId);
+            if (room == null || room.ApprovalStatus != "Approved")
+                return (null, "Room is not available for booking.");
+
             // Normalize dates to Date part only to avoid time-of-day overlap issues
             var checkIn = dto.CheckInDate.Date;
             var checkOut = dto.CheckOutDate.Date;

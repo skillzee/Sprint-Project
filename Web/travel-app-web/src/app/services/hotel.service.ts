@@ -36,4 +36,32 @@ export class HotelService {
     return this.http.post<Room>(`${api}/${hotelId}/rooms`, dto);
   }
 
+  getMyHotels(){
+    return this.http.get<Hotel[]>(`${api}/my`);
+  }
+
+  getPendingHotels(){
+    return this.http.get<Hotel[]>(`${api}/pending`);
+  }
+
+  getPendingRooms(){
+    return this.http.get<Room[]>(`${api}/rooms/pending`);
+  }
+
+  approveHotel(id: number){
+    return this.http.put<Hotel>(`${api}/${id}/approve`, {});
+  }
+
+  rejectHotel(id: number){
+    return this.http.put<Hotel>(`${api}/${id}/reject`, {});
+  }
+
+  approveRoom(hotelId: number, roomId: number){
+    return this.http.put<Room>(`${api}/${hotelId}/rooms/${roomId}/approve`, {});
+  }
+
+  rejectRoom(hotelId: number, roomId: number){
+    return this.http.put<Room>(`${api}/${hotelId}/rooms/${roomId}/reject`, {});
+  }
+
 }

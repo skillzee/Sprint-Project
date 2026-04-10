@@ -9,6 +9,8 @@ namespace TravelApp.Services.Auth.Services;
 
 public class AuthService : IAuthService
 {
+    private static readonly HashSet<string> AllowedSelfAssignRoles = ["Customer", "HotelManager"];
+
     private readonly IAuthRepository _authRepo;
     private readonly JwtHelper _jwtHelper;
     private readonly IConfiguration _config;
@@ -20,12 +22,16 @@ public class AuthService : IAuthService
         _config = config;
     }
 
-    public async Task<AuthResponseDto?> RegisterAsync(RegisterDto dto)
+    public async Task<RegisterResult> RegisterAsync(RegisterDto dto)
     {
+        // 0. Role allowlist guard
+        if (!AllowedSelfAssignRoles.Contains(dto.Role))
+            return new RegisterResult.RoleForbidden(dto.Role);
+
         // 1. Business Check: Does user exist?
         if (await _authRepo.UserExistsAsync(dto.Email))
         {
-            return null; // For this demo, returning null indicates failure (e.g., email exists)
+            return new RegisterResult.EmailAlreadyExists();
         }
 
         // 2. Business Logic: Hash password
@@ -43,7 +49,7 @@ public class AuthService : IAuthService
         // 4. Token Generation
         var token = _jwtHelper.GenerateToken(user);
 
-        return new AuthResponseDto(user.Id, user.Name, user.Email, user.Role, token);
+        return new RegisterResult.Success(new AuthResponseDto(user.Id, user.Name, user.Email, user.Role, token));
     }
 
     public async Task<AuthResponseDto?> LoginAsync(LoginDto dto)

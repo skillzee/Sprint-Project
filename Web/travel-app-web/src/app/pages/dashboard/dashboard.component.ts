@@ -15,7 +15,7 @@ import { CommonModule } from '@angular/common';
 export class DashboardComponent {
 
 
-  activeTab = signal<'bookings'|'hotels'>('bookings');
+  activeTab = signal<'bookings'|'hotels'|'approvals'>('bookings');
 
   bookings = signal<any[]>([]);
   totalRevenue = signal(0);
@@ -25,6 +25,10 @@ export class DashboardComponent {
   hotelSaving = signal(false);
   roomSaving = signal(false);
   selectedHotelId = signal<number | null>(null);
+
+  pendingHotels = signal<Hotel[]>([]);
+  pendingRooms = signal<any[]>([]);
+  approvalsLoading = signal(false);
 
 
   newHotel = signal<CreateHotelDto>({
@@ -58,6 +62,47 @@ export class DashboardComponent {
       next: res=>this.hotels.set(res),
       error: err=>console.error(err)
     })
+  }
+
+  loadApprovals(){
+    this.approvalsLoading.set(true);
+    this.hotelService.getPendingHotels().subscribe({
+      next: hotels => this.pendingHotels.set(hotels),
+      error: () => {}
+    });
+    this.hotelService.getPendingRooms().subscribe({
+      next: rooms => { this.pendingRooms.set(rooms); this.approvalsLoading.set(false); },
+      error: () => this.approvalsLoading.set(false)
+    });
+  }
+
+  switchTab(tab: 'bookings'|'hotels'|'approvals'){
+    this.activeTab.set(tab);
+    if(tab === 'approvals') this.loadApprovals();
+  }
+
+  approveHotel(id: number){
+    this.hotelService.approveHotel(id).subscribe({
+      next: () => this.pendingHotels.update(list => list.filter(h => h.id !== id))
+    });
+  }
+
+  rejectHotel(id: number){
+    this.hotelService.rejectHotel(id).subscribe({
+      next: () => this.pendingHotels.update(list => list.filter(h => h.id !== id))
+    });
+  }
+
+  approveRoom(hotelId: number, roomId: number){
+    this.hotelService.approveRoom(hotelId, roomId).subscribe({
+      next: () => this.pendingRooms.update(list => list.filter(r => r.id !== roomId))
+    });
+  }
+
+  rejectRoom(hotelId: number, roomId: number){
+    this.hotelService.rejectRoom(hotelId, roomId).subscribe({
+      next: () => this.pendingRooms.update(list => list.filter(r => r.id !== roomId))
+    });
   }
 
   createHotel(){

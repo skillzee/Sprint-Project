@@ -7,7 +7,6 @@ namespace TravelApp.Services.Hotel.Repositories
 {
     public class HotelRepository : IHotelRepository
     {
-
         private readonly HotelDbContext _db;
 
         public HotelRepository(HotelDbContext db)
@@ -27,7 +26,7 @@ namespace TravelApp.Services.Hotel.Repositories
 
         public async Task DeleteHotelAsync(Models.Hotel hotel)
         {
-            _db.Hotels.Remove(hotel);  
+            _db.Hotels.Remove(hotel);
         }
 
         public async Task<IEnumerable<Models.Hotel>> GetAllWithRoomsAsync(string? city)
@@ -39,7 +38,7 @@ namespace TravelApp.Services.Hotel.Repositories
                 query = query.Where(h => h.City.ToLower().Contains(city.ToLower()));
             }
 
-            return await query.ToListAsync(); 
+            return await query.ToListAsync();
         }
 
         public async Task<Models.Hotel?> GetByIdAsync(int id)
@@ -49,12 +48,41 @@ namespace TravelApp.Services.Hotel.Repositories
 
         public async Task<Models.Hotel?> GetByIdWithRoomsAsync(int id)
         {
-            return await _db.Hotels.Include(h => h.Rooms).FirstOrDefaultAsync(h =>  h.Id == id);
+            return await _db.Hotels.Include(h => h.Rooms).FirstOrDefaultAsync(h => h.Id == id);
         }
 
         public async Task SaveChangesAsync()
         {
             await _db.SaveChangesAsync();
+        }
+
+        public async Task<IEnumerable<Models.Hotel>> GetPendingHotelsAsync()
+        {
+            return await _db.Hotels
+                .Include(h => h.Rooms)
+                .Where(h => h.ApprovalStatus == "Pending")
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Room>> GetPendingRoomsAsync()
+        {
+            return await _db.Rooms
+                .Include(r => r.Hotel)
+                .Where(r => r.ApprovalStatus == "Pending")
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Models.Hotel>> GetHotelsByOwnerAsync(int ownerId)
+        {
+            return await _db.Hotels
+                .Include(h => h.Rooms)
+                .Where(h => h.OwnerId == ownerId)
+                .ToListAsync();
+        }
+
+        public async Task<Room?> GetRoomByIdAsync(int roomId)
+        {
+            return await _db.Rooms.FindAsync(roomId);
         }
     }
 }

@@ -43,6 +43,10 @@ export interface Hotel {
   starRating: number;
   amenities: string;
   rooms: Room[];
+  ownerId: number;
+  ownerEmail: string;
+  ownerName: string;
+  approvalStatus: string;
 }
 
 export interface Room {
@@ -53,6 +57,7 @@ export interface Room {
   isAvailable: boolean;
   maxOccupancy: number;
   description: string;
+  approvalStatus: string;
 }
 
 

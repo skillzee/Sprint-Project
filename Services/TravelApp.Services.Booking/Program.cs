@@ -15,6 +15,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 builder.Services.AddScoped<IBookingService, BookingService>();
 
+builder.Services.AddHttpClient<TravelApp.Services.Booking.Clients.IHotelClient, TravelApp.Services.Booking.Clients.HotelClient>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["HotelService:BaseUrl"] ?? "http://hotel:5165");
+});
+
 builder.Services.AddDbContext<BookingDbContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"),

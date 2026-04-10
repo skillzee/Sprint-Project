@@ -23,3 +23,20 @@ public class BookingCancelledEvent
     public string BookingRef { get; set; } = "";
 }
 
+
+public class HotelApprovedEvent
+{
+    public int HotelId { get; set; }
+    public string HotelName { get; set; } = "";
+    public string OwnerEmail { get; set; } = "";
+    public string OwnerName { get; set; } = "";
+}
+
+public class HotelRejectedEvent
+{
+    public int HotelId { get; set; }
+    public string HotelName { get; set; } = "";
+    public string OwnerEmail { get; set; } = "";
+    public string OwnerName { get; set; } = "";
+    public string? Reason { get; set; }
+}

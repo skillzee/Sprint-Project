@@ -11,5 +11,11 @@ namespace TravelApp.Services.Hotel.Interfaces
         Task AddRoomAsync(Room room);
         Task DeleteHotelAsync(Models.Hotel hotel);
         Task SaveChangesAsync();
+
+        // New methods
+        Task<IEnumerable<Models.Hotel>> GetPendingHotelsAsync();
+        Task<IEnumerable<Room>> GetPendingRoomsAsync();
+        Task<IEnumerable<Models.Hotel>> GetHotelsByOwnerAsync(int ownerId);
+        Task<Room?> GetRoomByIdAsync(int roomId);
     }
 }
