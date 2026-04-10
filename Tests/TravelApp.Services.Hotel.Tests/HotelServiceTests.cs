@@ -6,6 +6,7 @@ using TravelApp.Services.Hotel.Models;
 using TravelApp.Services.Hotel.Services;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
+using MassTransit;
 
 namespace TravelApp.Services.Hotel.Tests;
 
@@ -14,6 +15,7 @@ public class HotelServiceTests
     private readonly Mock<IHotelRepository> _repoMock;
     private readonly Mock<IDistributedCache> _cacheMock;
     private readonly Mock<ILogger<HotelService>> _loggerMock;
+    private readonly Mock<IPublishEndpoint> _publishMock;
     private readonly HotelService _service;
 
     public HotelServiceTests()
@@ -21,7 +23,8 @@ public class HotelServiceTests
         _repoMock = new Mock<IHotelRepository>();
         _cacheMock = new Mock<IDistributedCache>();
         _loggerMock = new Mock<ILogger<HotelService>>();
-        _service = new HotelService(_repoMock.Object, _cacheMock.Object, _loggerMock.Object);
+        _publishMock = new Mock<IPublishEndpoint>();
+        _service = new HotelService(_repoMock.Object, _cacheMock.Object, _loggerMock.Object, _publishMock.Object);
     }
 
     [Fact]
@@ -65,7 +68,7 @@ public class HotelServiceTests
         var dto = new CreateHotelDto("New Hotel", "Delhi", "Addr", "Desc", 5, "WiFi");
 
         // Act
-        var result = await _service.CreateHotelAsync(dto);
+        var result = await _service.CreateHotelAsync(dto, 1, "owner@test.com", "Owner Name");
 
         // Assert
         result.Name.Should().Be(dto.Name);
@@ -80,7 +83,7 @@ public class HotelServiceTests
         _repoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync((Models.Hotel?)null);
 
         // Act
-        var result = await _service.AddRoomToHotelAsync(1, new CreateRoomDto(1,"Deluxe", 100, 2, "Desc"));
+        var result = await _service.AddRoomToHotelAsync(1, new CreateRoomDto(1,"Deluxe", 100, 2, "Desc"), 1);
 
         // Assert
         result.Should().BeNull();

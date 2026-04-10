@@ -1,10 +1,11 @@
-﻿using Moq;
+using Moq;
 using FluentAssertions;
 using MassTransit;
 using TravelApp.Services.Booking.DTOs;
 using TravelApp.Services.Booking.Interfaces;
 using TravelApp.Services.Booking.Services;
 using TravelApp.Shared;
+using TravelApp.Services.Booking.Clients;
 
 namespace TravelApp.Services.Booking.Tests;
 
@@ -12,13 +13,15 @@ public class BookingServiceTests
 {
     private readonly Mock<IBookingRepository> _repoMock;
     private readonly Mock<IPublishEndpoint> _busMock;
+    private readonly Mock<IHotelClient> _hotelClientMock;
     private readonly BookingService _service;
 
     public BookingServiceTests()
     {
         _repoMock = new Mock<IBookingRepository>();
         _busMock = new Mock<IPublishEndpoint>();
-        _service = new BookingService(_repoMock.Object, _busMock.Object);
+        _hotelClientMock = new Mock<IHotelClient>();
+        _service = new BookingService(_repoMock.Object, _busMock.Object, _hotelClientMock.Object);
     }
 
     [Fact]
@@ -27,6 +30,9 @@ public class BookingServiceTests
         // Arrange
         var dto = new CreateBookingDto(1, "Deluxe", "Hotel", DateTime.Today.AddDays(1), DateTime.Today.AddDays(3), 100);
         // 2 nights * 100 = 200
+
+        _hotelClientMock.Setup(c => c.GetRoomAsync(dto.RoomId))
+            .ReturnsAsync(new RoomStatusDto(dto.RoomId, "Approved"));
 
         // Act
         var result = await _service.CreateBookingAsync(dto, 1, "User", "user@test.com");
@@ -60,7 +66,9 @@ public class BookingServiceTests
     {
         // Arrange
         var dto = new CreateBookingDto(1, "Deluxe", "Hotel", DateTime.Today.AddDays(1), DateTime.Today.AddDays(3), 100);
-        _repoMock.Setup(r => r.HasOverlappingBookingAsync(1, dto.RoomId, dto.CheckInDate, dto.CheckOutDate)).ReturnsAsync(true);
+        _hotelClientMock.Setup(c => c.GetRoomAsync(dto.RoomId))
+            .ReturnsAsync(new RoomStatusDto(dto.RoomId, "Approved"));
+        _repoMock.Setup(r => r.HasOverlappingBookingAsync(1, dto.RoomId, It.IsAny<DateTime>(), It.IsAny<DateTime>())).ReturnsAsync(true);
 
         // Act
         var result = await _service.CreateBookingAsync(dto, 1, "User", "user@test.com");
