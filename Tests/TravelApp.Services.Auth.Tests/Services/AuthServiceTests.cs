@@ -33,7 +33,7 @@ public class AuthServiceTests
     public async Task RegisterAsync_ShouldReturnResponse_WhenUserDoesNotExist()
     {
         // Arrange
-        var dto = new RegisterDto("Test User", "test@example.com", "Password123!", "User");
+        var dto = new RegisterDto("Test User", "test@example.com", "Password123!", "Customer");
         _authRepoMock.Setup(r => r.UserExistsAsync(dto.Email)).ReturnsAsync(false);
         _authRepoMock.Setup(r => r.CreateUserAsync(It.IsAny<User>()))
             .ReturnsAsync(new User { Id = 1, Name = dto.Name, Email = dto.Email, Role = dto.Role });
@@ -53,7 +53,7 @@ public class AuthServiceTests
     public async Task RegisterAsync_ShouldReturnNull_WhenUserAlreadyExists()
     {
         // Arrange
-        var dto = new RegisterDto("Test User", "test@example.com", "Password123!", "User");
+        var dto = new RegisterDto("Test User", "test@example.com", "Password123!", "Customer");
         _authRepoMock.Setup(r => r.UserExistsAsync(dto.Email)).ReturnsAsync(true);
 
         // Act

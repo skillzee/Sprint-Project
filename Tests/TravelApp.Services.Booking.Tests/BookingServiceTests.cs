@@ -52,6 +52,8 @@ public class BookingServiceTests
     {
         // Arrange (Check-out before check-in)
         var dto = new CreateBookingDto(1, "Deluxe", "Hotel", DateTime.Today.AddDays(3), DateTime.Today.AddDays(1), 100);
+        _hotelClientMock.Setup(c => c.GetRoomAsync(dto.RoomId))
+            .ReturnsAsync(new RoomStatusDto(dto.RoomId, "Approved"));
 
         // Act
         var result = await _service.CreateBookingAsync(dto, 1, "User", "user@test.com");

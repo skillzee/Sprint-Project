@@ -22,8 +22,8 @@ public class AuthControllerTests
     public async Task Register_ShouldReturnOk_WhenServiceSucceeds()
     {
         // Arrange
-        var dto = new RegisterDto("Test User", "test@example.com", "Password123!", "User");
-        var expectedResponse = new AuthResponseDto(1, "Test User", "test@example.com", "User", "fake-jwt-token");
+        var dto = new RegisterDto("Test User", "test@example.com", "Password123!", "Customer");
+        var expectedResponse = new AuthResponseDto(1, "Test User", "test@example.com", "Customer", "fake-jwt-token");
 
         _authServiceMock.Setup(s => s.RegisterAsync(dto))
             .ReturnsAsync(new RegisterResult.Success(expectedResponse));

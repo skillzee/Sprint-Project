@@ -33,8 +33,8 @@ public class HotelServiceTests
         // Arrange
         var hotels = new List<Models.Hotel>
         {
-            new Models.Hotel { Id = 1, Name = "Hotel 1", City = "Delhi", Rooms = new List<Room>() },
-            new Models.Hotel { Id = 2, Name = "Hotel 2", City = "Mumbai", Rooms = new List<Room>() }
+            new Models.Hotel { Id = 1, Name = "Hotel 1", City = "Delhi", Rooms = new List<Room>(), ApprovalStatus = "Approved" },
+            new Models.Hotel { Id = 2, Name = "Hotel 2", City = "Mumbai", Rooms = new List<Room>(), ApprovalStatus = "Approved" }
         };
         _repoMock.Setup(r => r.GetAllWithRoomsAsync(null)).ReturnsAsync(hotels);
 
@@ -50,7 +50,7 @@ public class HotelServiceTests
     public async Task GetHotelByIdAsync_ShouldReturnDto_WhenFound()
     {
         // Arrange
-        var hotel = new Models.Hotel { Id = 1, Name = "Hotel 1", Rooms = new List<Room>() };
+        var hotel = new Models.Hotel { Id = 1, Name = "Hotel 1", Rooms = new List<Room>(), ApprovalStatus = "Approved" };
         _repoMock.Setup(r => r.GetByIdWithRoomsAsync(1)).ReturnsAsync(hotel);
 
         // Act
