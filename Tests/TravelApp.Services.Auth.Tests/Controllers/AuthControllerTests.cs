@@ -26,7 +26,7 @@ public class AuthControllerTests
         var expectedResponse = new AuthResponseDto(1, "Test User", "test@example.com", "User", "fake-jwt-token");
 
         _authServiceMock.Setup(s => s.RegisterAsync(dto))
-            .ReturnsAsync(expectedResponse);
+            .ReturnsAsync(new RegisterResult.Success(expectedResponse));
 
         // Act
         var result = await _controller.Register(dto);
@@ -46,7 +46,7 @@ public class AuthControllerTests
         // Arrange
         var dto = new RegisterDto("New", "duplicate@example.com", "Password123!", "User");
         _authServiceMock.Setup(s => s.RegisterAsync(dto))
-            .ReturnsAsync((AuthResponseDto?)null);
+            .ReturnsAsync(new RegisterResult.EmailAlreadyExists());
 
         // Act
         var result = await _controller.Register(dto);

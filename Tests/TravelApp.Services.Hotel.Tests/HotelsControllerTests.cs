@@ -24,7 +24,7 @@ public class HotelsControllerTests
         // Arrange
         var hotels = new List<HotelDto> 
         { 
-            new HotelDto(1, "Hotel 1", "Delhi", "Addr", "Desc", 5, "WiFi", new List<RoomDto>()) 
+            new HotelDto(1, "Hotel 1", "Delhi", "Addr", "Desc", 5, "WiFi", new List<RoomDto>(), 1, "owner@test.com", "Owner", "Approved") 
         };
         _serviceMock.Setup(s => s.GetHotelsAsync(null)).ReturnsAsync(hotels);
 
@@ -55,8 +55,20 @@ public class HotelsControllerTests
     {
         // Arrange
         var dto = new CreateHotelDto("New", "City", "Addr", "Desc", 5, "WiFi");
-        var response = new HotelDto(1, "New", "City", "Addr", "Desc", 5, "WiFi", new List<RoomDto>());
-        _serviceMock.Setup(s => s.CreateHotelAsync(dto)).ReturnsAsync(response);
+        var response = new HotelDto(1, "New", "City", "Addr", "Desc", 5, "WiFi", new List<RoomDto>(), 1, "owner@test.com", "Owner", "Approved");
+        _serviceMock.Setup(s => s.CreateHotelAsync(dto, 1, "owner@test.com", "Owner")).ReturnsAsync(response);
+
+        var user = new System.Security.Claims.ClaimsPrincipal(new System.Security.Claims.ClaimsIdentity(new System.Security.Claims.Claim[]
+        {
+            new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.NameIdentifier, "1"),
+            new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Email, "owner@test.com"),
+            new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Name, "Owner")
+        }, "mock"));
+
+        _controller.ControllerContext = new ControllerContext()
+        {
+            HttpContext = new Microsoft.AspNetCore.Http.DefaultHttpContext() { User = user }
+        };
 
         // Act
         var result = await _controller.Create(dto);

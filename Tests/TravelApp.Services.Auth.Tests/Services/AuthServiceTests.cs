@@ -42,9 +42,10 @@ public class AuthServiceTests
         var result = await _authService.RegisterAsync(dto);
 
         // Assert
-        result.Should().NotBeNull();
-        result!.Email.Should().Be(dto.Email);
-        result.Token.Should().NotBeNullOrEmpty();
+        result.Should().BeOfType<RegisterResult.Success>();
+        var success = result as RegisterResult.Success;
+        success!.Response.Email.Should().Be(dto.Email);
+        success.Response.Token.Should().NotBeNullOrEmpty();
         _authRepoMock.Verify(r => r.CreateUserAsync(It.IsAny<User>()), Times.Once);
     }
 
@@ -59,7 +60,7 @@ public class AuthServiceTests
         var result = await _authService.RegisterAsync(dto);
 
         // Assert
-        result.Should().BeNull();
+        result.Should().BeOfType<RegisterResult.EmailAlreadyExists>();
         _authRepoMock.Verify(r => r.CreateUserAsync(It.IsAny<User>()), Times.Never);
     }
 
