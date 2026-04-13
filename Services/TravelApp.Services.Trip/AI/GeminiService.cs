@@ -69,19 +69,7 @@ namespace TravelApp.Services.Trip.AI
             if (!response.IsSuccessStatusCode)
             {
                 logger.LogError("Gemini API error: {Res}", responseStr);
-                var userMessage = "Failed to generate itinerary. Please try again.";
-                try
-                {
-                    using var errDoc = JsonDocument.Parse(responseStr);
-                    var msg = errDoc.RootElement
-                        .GetProperty("error")
-                        .GetProperty("message")
-                        .GetString();
-                    if (!string.IsNullOrWhiteSpace(msg))
-                        userMessage = msg;
-                }
-                catch { /* use default message */ }
-                throw new Exception(userMessage);
+                return ParseResponse(string.Empty, totalDays); // return fallback itinerary
             }
 
             return ParseResponse(responseStr, totalDays);
