@@ -1,59 +1,57 @@
-# TravelAppWeb
+# TravelApp - Web Client
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.2.22.
+The **TravelApp Web Client** is a modern, responsive frontend application built with **Angular**.
 
-## Development server
+## 🚀 Purpose
 
-To start a local development server, run:
+- **User Interface**: Provides an intuitive interface for searching flights, booking hotels, and managing trips.
+- **Role-based Experience**: Tailored experiences for regular Users and Hotel Agents.
+- **Client-side Logic**: Handles form validations, state management, and interaction with the API Gateway.
 
-```bash
-ng serve
-```
+---
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+## 🏗️ Architecture
 
-## Code scaffolding
+- **Framework**: Angular
+- **State Management**: Service-based state management or RxJS-driven streams.
+- **Routing**: Angular Router for seamless single-page application navigation.
+- **Styling**: CSS / Bootstrap for a clean and responsive design.
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+---
 
-```bash
-ng generate component component-name
-```
+## 🛠️ Tech Stack
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+- **Framework**: Angular
+- **Language**: TypeScript
+- **Styling**: CSS
+- **Inter-service**: Communicates with the Ocelot API Gateway.
 
-```bash
-ng generate --help
-```
+---
 
-## Building
+## 🚀 Running the Web App
 
-To build the project run:
+### Prerequisites
+- Node.js (v18+)
+- npm
 
-```bash
-ng build
-```
+### Setup & Run
+1. Navigate to the web directory:
+   ```bash
+   cd Web/travel-app-web
+   ```
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Run the development server:
+   ```bash
+   npm start
+   ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+The application will be available at `http://localhost:4200` (or as configured). In production/Docker environments, it is typically served on port `80`.
 
-## Running unit tests
+---
 
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+## 🔐 Authentication
 
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+The web app stores the JWT received from the Auth Service (via the Gateway) in local storage or session storage and includes it in the `Authorization` header for all protected API calls.
