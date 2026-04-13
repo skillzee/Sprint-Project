@@ -10,6 +10,7 @@ using TravelApp.Services.Booking.Services;
 
 using TravelApp.Shared.Middleware;
 
+DotNetEnv.Env.Load();
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
