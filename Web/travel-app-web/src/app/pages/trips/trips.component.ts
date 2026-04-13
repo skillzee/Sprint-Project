@@ -103,7 +103,7 @@ export class TripsComponent {
         this.isGenerating.set(false);
       },
       error: (err) => {
-        const msg = err?.error?.message || 'AI generation failed. Please try again.';
+        const msg = err?.error?.detail || 'AI generation failed. Please try again.';
         this.generateError.set(msg);
         this.isGenerating.set(false);
       }

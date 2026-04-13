@@ -42,7 +42,8 @@ public class GlobalExceptionHandlerMiddleware
             Type = "https://tools.ietf.org/html/rfc7231#section-6.6.1"
         };
 
-        var result = JsonSerializer.Serialize(problemDetails);
+        var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+        var result = JsonSerializer.Serialize(problemDetails, options);
         return context.Response.WriteAsync(result);
     }
 }
