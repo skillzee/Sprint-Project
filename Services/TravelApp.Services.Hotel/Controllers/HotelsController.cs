@@ -176,8 +176,6 @@ namespace TravelApp.Services.Hotel.Controllers
             return Ok(result);
         }
 
-        // ── Existing Admin endpoint ───────────────────────────────────────────
-
         /// <summary>
         /// Deletes a hotel
         /// </summary>
