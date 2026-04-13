@@ -138,7 +138,10 @@
                         <h3 style="font-family:var(--font-display);font-size:1.15rem;margin-bottom:4px">{{ h.name }}</h3>
                         <p style="font-size:0.82rem;color:var(--gray);margin-bottom:8px">📍 {{ h.city }}</p>
                       </div>
-                      <span class="badge badge-teal">{{ h.rooms.length }} Rooms</span>
+                      <div style="display:flex;gap:8px;align-items:center">
+                        <span class="badge badge-teal">{{ h.rooms.length }} Rooms</span>
+                        <button class="btn btn-sm" style="background:#e74c3c;color:#fff;border:none" (click)="deleteHotel(h.id)">Delete</button>
+                      </div>
                     </div>
 
                     @if(selectedHotelId() === h.id) {

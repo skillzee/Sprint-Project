@@ -64,4 +64,8 @@ export class HotelService {
     return this.http.put<Room>(`${api}/${hotelId}/rooms/${roomId}/reject`, {});
   }
 
+  deleteHotel(id: number){
+    return this.http.delete<void>(`${api}/${id}`);
+  }
+
 }

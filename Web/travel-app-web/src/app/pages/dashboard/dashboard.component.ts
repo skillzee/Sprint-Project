@@ -157,6 +157,14 @@ export class DashboardComponent {
   }
 
 
+  deleteHotel(id: number){
+    if(!confirm('Delete this hotel and all its rooms?')) return;
+    this.hotelService.deleteHotel(id).subscribe({
+      next: () => this.hotels.update(list => list.filter(h => h.id !== id)),
+      error: () => {}
+    });
+  }
+
   confirmedCount(){ 
     return this.bookings().filter(b => b.status === 'Confirmed').length; 
   }

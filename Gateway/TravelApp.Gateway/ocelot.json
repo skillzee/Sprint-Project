@@ -111,6 +111,15 @@
       "RouteClaimsRequirement": { "http://schemas.microsoft.com/ws/2008/06/identity/claims/role": "HotelManager" }
     },
     {
+      "DownstreamPathTemplate": "/api/hotels/{id}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [{ "Host": "hotel", "Port": 5165 }],
+      "UpstreamPathTemplate": "/api/hotels/{id}",
+      "UpstreamHttpMethod": [ "DELETE" ],
+      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" },
+      "RouteClaimsRequirement": { "http://schemas.microsoft.com/ws/2008/06/identity/claims/role": "Admin" }
+    },
+    {
       "DownstreamPathTemplate": "/api/hotels/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [{ "Host": "hotel", "Port": 5165 }],
