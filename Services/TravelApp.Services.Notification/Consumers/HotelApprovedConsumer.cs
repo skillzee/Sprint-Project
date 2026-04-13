@@ -4,17 +4,31 @@ using TravelApp.Shared;
 
 namespace TravelApp.Services.Notification.Consumers;
 
+/// <summary>
+/// MassTransit consumer that handles <see cref="HotelApprovedEvent"/> messages from RabbitMQ.
+/// Sends a styled HTML approval notification email to the Hotel Manager.
+/// </summary>
 public class HotelApprovedConsumer : IConsumer<HotelApprovedEvent>
 {
     private readonly ILogger<HotelApprovedConsumer> _logger;
     private readonly IEmailService _emailService;
 
+    /// <summary>
+    /// Initializes a new instance of <see cref="HotelApprovedConsumer"/>.
+    /// </summary>
+    /// <param name="logger">The logger instance.</param>
+    /// <param name="emailService">The email service used to send the approval email.</param>
     public HotelApprovedConsumer(ILogger<HotelApprovedConsumer> logger, IEmailService emailService)
     {
         _logger = logger;
         _emailService = emailService;
     }
 
+    /// <summary>
+    /// Processes a <see cref="HotelApprovedEvent"/> by sending an approval notification email
+    /// to the Hotel Manager informing them their listing is now live.
+    /// </summary>
+    /// <param name="context">The MassTransit consume context containing the event message.</param>
     public async Task Consume(ConsumeContext<HotelApprovedEvent> context)
     {
         var message = context.Message;

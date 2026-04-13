@@ -6,12 +6,22 @@ using TravelApp.Shared;
 
 namespace TravelApp.Services.Booking.Services
 {
+    /// <summary>
+    /// Implements booking business logic including date validation, overlap prevention,
+    /// room availability checks, and RabbitMQ event publishing.
+    /// </summary>
     public class BookingService : IBookingService
     {
         private readonly IBookingRepository _repo;
         private readonly IPublishEndpoint _bus;
         private readonly IHotelClient _hotelClient;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="BookingService"/>.
+        /// </summary>
+        /// <param name="repo">The booking data access repository.</param>
+        /// <param name="bus">The MassTransit publish endpoint for raising domain events.</param>
+        /// <param name="hotelClient">The HTTP client for querying the Hotel service.</param>
         public BookingService(IBookingRepository repo, IPublishEndpoint bus, IHotelClient hotelClient)
         {
             _repo = repo;
@@ -19,8 +29,14 @@ namespace TravelApp.Services.Booking.Services
             _hotelClient = hotelClient;
         }
 
-
-
+        /// <summary>
+        /// Cancels an existing booking. Admins can cancel any booking; users can only cancel their own.
+        /// Publishes a <c>BookingCancelledEvent</c> on success.
+        /// </summary>
+        /// <param name="id">The ID of the booking to cancel.</param>
+        /// <param name="userId">The ID of the requesting user.</param>
+        /// <param name="role">The role of the requesting user (<c>"Admin"</c> or <c>"Customer"</c>).</param>
+        /// <returns><c>true</c> if cancelled successfully; otherwise, <c>false</c>.</returns>
         public async Task<bool> CancelBookingAsync(int id, int userId, string role)
         {
             var booking = await _repo.GetByIdAsync(id);
@@ -40,6 +56,18 @@ namespace TravelApp.Services.Booking.Services
             return true;
         }
 
+        /// <summary>
+        /// Creates a new confirmed booking after validating dates, checking for overlaps, and verifying room approval.
+        /// Publishes a <c>BookingConfirmedEvent</c> on success.
+        /// </summary>
+        /// <param name="dto">The booking request details including room, hotel, and dates.</param>
+        /// <param name="userId">The ID of the user placing the booking.</param>
+        /// <param name="userName">The display name of the user.</param>
+        /// <param name="userEmai">The email address of the user for confirmation notifications.</param>
+        /// <returns>
+        /// A tuple of the created <see cref="BookingDto"/> and a <c>null</c> error on success,
+        /// or a <c>null</c> result and a descriptive error message on failure.
+        /// </returns>
         public async Task<(BookingDto? result, string? errorMessage)> CreateBookingAsync(CreateBookingDto dto, int userId, string userName, string userEmai)
         {
             // 0. Room approval check (fail-safe: treat unreachable Hotel service as unavailable)
@@ -102,6 +130,10 @@ namespace TravelApp.Services.Booking.Services
             return (MapSingleToDto(booking), null);
         }
 
+        /// <summary>
+        /// Retrieves all bookings across all users along with the total revenue. Intended for Admin use only.
+        /// </summary>
+        /// <returns>An anonymous object containing a list of all bookings and the total revenue sum.</returns>
         public async Task<object> GetAllBookingWithRevenueAsync()
         {
             var bookings = await _repo.GetAllAsync();
@@ -110,6 +142,11 @@ namespace TravelApp.Services.Booking.Services
             return new { bookings = result, totalRevenue };
         }
 
+        /// <summary>
+        /// Retrieves all bookings made by a specific user, ordered newest first.
+        /// </summary>
+        /// <param name="userId">The unique identifier of the user.</param>
+        /// <returns>A collection of <see cref="BookingDto"/> for that user.</returns>
         public async Task<IEnumerable<BookingDto>> GetUserBookingsAsync(int userId)
         {
             var bookings =await _repo.GetByUserIdAsync(userId);
@@ -117,10 +154,12 @@ namespace TravelApp.Services.Booking.Services
         }
 
 
+        /// <summary>Maps a collection of booking entities to DTOs.</summary>
         private IEnumerable<BookingDto> MapToDto(IEnumerable<Models.Booking> bookings)
         {
             return bookings.Select(MapSingleToDto);
         }
+        /// <summary>Maps a single booking entity to a <see cref="BookingDto"/>.</summary>
         private BookingDto MapSingleToDto(Models.Booking b)
         {
             return new BookingDto(b.Id, b.UserId, b.UserName, b.RoomId, b.RoomType, b.HotelName,

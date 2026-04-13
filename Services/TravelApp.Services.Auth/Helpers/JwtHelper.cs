@@ -6,15 +6,28 @@ using TravelApp.Services.Auth.Models;
 
 namespace TravelApp.Services.Auth.Helpers;
 
+/// <summary>
+/// Provides JWT token generation functionality for authenticated users.
+/// </summary>
 public class JwtHelper
 {
     private readonly IConfiguration _config;
 
+    /// <summary>
+    /// Initializes a new instance of <see cref="JwtHelper"/> with the application configuration.
+    /// </summary>
+    /// <param name="config">The application configuration used to read JWT settings.</param>
     public JwtHelper(IConfiguration config)
     {
         _config = config;
     }
 
+    /// <summary>
+    /// Generates a signed JWT token for the given user, including their ID, name, email, and role as claims.
+    /// The token is valid for 2 hours from the time of generation.
+    /// </summary>
+    /// <param name="user">The authenticated <see cref="User"/> for whom to generate the token.</param>
+    /// <returns>A signed JWT token string.</returns>
     public string GenerateToken(User user)
     {
         var jwtSettings = _config.GetSection("JwtSettings");
@@ -37,7 +50,7 @@ public class JwtHelper
 
         var tokenHandler = new JwtSecurityTokenHandler();
         var token = tokenHandler.CreateToken(tokenDescriptor);
-        
+
         return tokenHandler.WriteToken(token);
     }
 }

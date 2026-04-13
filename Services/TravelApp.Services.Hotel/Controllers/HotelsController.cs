@@ -19,7 +19,9 @@ namespace TravelApp.Services.Hotel.Controllers
 
         // ── Public endpoints ──────────────────────────────────────────────────
 
-        // Retrieves all approved hotels (optionally filtered by city)
+        /// <summary>
+        /// Retrieves all approved hotels (optionally filtered by city)
+        /// </summary>
         [HttpGet]
         public async Task<ActionResult<IEnumerable<HotelDto>>> GetAll([FromQuery] string? city)
         {
@@ -27,7 +29,9 @@ namespace TravelApp.Services.Hotel.Controllers
             return Ok(result);
         }
 
-        // Retrieves details for a specific hotel by ID
+        /// <summary>
+        /// Retrieves details for a specific hotel by ID
+        /// </summary>
         [HttpGet("{id}")]
         public async Task<ActionResult<HotelDto>> Get(int id)
         {
@@ -39,7 +43,9 @@ namespace TravelApp.Services.Hotel.Controllers
 
         // ── Internal service-to-service endpoint ─────────────────────────────
 
-        // Retrieves the status of a specific room (Internal use)
+        /// <summary>
+        /// Retrieves the status of a specific room (Internal use)
+        /// </summary>
         [HttpGet("rooms/{roomId}/status")]
         public async Task<ActionResult> GetRoomStatus(int roomId)
         {
@@ -51,7 +57,9 @@ namespace TravelApp.Services.Hotel.Controllers
 
         // ── HotelManager endpoints ────────────────────────────────────────────
 
-        // Creates a new hotel as a Hotel Manager
+        /// <summary>
+        /// Creates a new hotel as a Hotel Manager
+        /// </summary>
         [HttpPost]
         [Authorize(Roles = "HotelManager")]
         public async Task<ActionResult> Create(CreateHotelDto dto)
@@ -64,7 +72,9 @@ namespace TravelApp.Services.Hotel.Controllers
             return Ok(result);
         }
 
-        // Adds a room to an existing hotel owned by the manager
+        /// <summary>
+        /// Adds a room to an existing hotel owned by the manager
+        /// </summary>
         [HttpPost("{id}/rooms")]
         [Authorize(Roles = "HotelManager")]
         public async Task<ActionResult> AddRoom(int id, CreateRoomDto dto)
@@ -78,7 +88,9 @@ namespace TravelApp.Services.Hotel.Controllers
             return Ok(result);
         }
 
-        // Retrieves all hotels owned by the current Hotel Manager
+        /// <summary>
+        /// Retrieves all hotels owned by the current Hotel Manager
+        /// </summary>
         [HttpGet("my")]
         [Authorize(Roles = "HotelManager")]
         public async Task<ActionResult<IEnumerable<HotelDto>>> GetMyHotels()
@@ -90,7 +102,9 @@ namespace TravelApp.Services.Hotel.Controllers
 
         // ── Admin endpoints ───────────────────────────────────────────────────
 
-        // Retrieves all pending hotels awaiting admin approval
+        /// <summary>
+        /// Retrieves all pending hotels awaiting admin approval
+        /// </summary>
         [HttpGet("pending")]
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult<IEnumerable<HotelDto>>> GetPending()
@@ -99,7 +113,9 @@ namespace TravelApp.Services.Hotel.Controllers
             return Ok(result);
         }
 
-        // Retrieves all pending rooms awaiting admin approval
+        /// <summary>
+        /// Retrieves all pending rooms awaiting admin approval
+        /// </summary>
         [HttpGet("rooms/pending")]
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult<IEnumerable<RoomDto>>> GetPendingRooms()
@@ -108,7 +124,9 @@ namespace TravelApp.Services.Hotel.Controllers
             return Ok(result);
         }
 
-        // Approves a pending hotel
+        /// <summary>
+        /// Approves a pending hotel
+        /// </summary>
         [HttpPut("{id}/approve")]
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult<HotelDto>> ApproveHotel(int id)
@@ -119,7 +137,9 @@ namespace TravelApp.Services.Hotel.Controllers
             return Ok(result);
         }
 
-        // Rejects a pending hotel with a reason
+        /// <summary>
+        /// Rejects a pending hotel with a reason
+        /// </summary>
         [HttpPut("{id}/reject")]
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult<HotelDto>> RejectHotel(int id, [FromBody] RejectDto dto)
@@ -130,7 +150,9 @@ namespace TravelApp.Services.Hotel.Controllers
             return Ok(result);
         }
 
-        // Approves a pending room within a hotel
+        /// <summary>
+        /// Approves a pending room within a hotel
+        /// </summary>
         [HttpPut("{hotelId}/rooms/{roomId}/approve")]
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult<RoomDto>> ApproveRoom(int hotelId, int roomId)
@@ -141,7 +163,9 @@ namespace TravelApp.Services.Hotel.Controllers
             return Ok(result);
         }
 
-        // Rejects a pending room within a hotel
+        /// <summary>
+        /// Rejects a pending room within a hotel
+        /// </summary>
         [HttpPut("{hotelId}/rooms/{roomId}/reject")]
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult<RoomDto>> RejectRoom(int hotelId, int roomId)
@@ -154,7 +178,9 @@ namespace TravelApp.Services.Hotel.Controllers
 
         // ── Existing Admin endpoint ───────────────────────────────────────────
 
-        // Deletes a hotel
+        /// <summary>
+        /// Deletes a hotel
+        /// </summary>
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult> Delete(int id)

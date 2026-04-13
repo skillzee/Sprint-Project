@@ -4,17 +4,31 @@ using TravelApp.Shared;
 
 namespace TravelApp.Services.Notification.Consumers;
 
+/// <summary>
+/// MassTransit consumer that handles <see cref="BookingConfirmedEvent"/> messages from RabbitMQ.
+/// Sends a styled HTML booking confirmation email to the user.
+/// </summary>
 public class BookingConfirmedConsumer : IConsumer<BookingConfirmedEvent>
 {
     private readonly ILogger<BookingConfirmedConsumer> _logger;
     private readonly IEmailService _emailService;
 
+    /// <summary>
+    /// Initializes a new instance of <see cref="BookingConfirmedConsumer"/>.
+    /// </summary>
+    /// <param name="logger">The logger instance.</param>
+    /// <param name="emailService">The email service used to send the confirmation email.</param>
     public BookingConfirmedConsumer(ILogger<BookingConfirmedConsumer> logger, IEmailService emailService)
     {
         _logger = logger;
         _emailService = emailService;
     }
 
+    /// <summary>
+    /// Processes a <see cref="BookingConfirmedEvent"/> by sending a booking confirmation email
+    /// with the booking reference, hotel name, room type, dates, and total price.
+    /// </summary>
+    /// <param name="context">The MassTransit consume context containing the event message.</param>
     public async Task Consume(ConsumeContext<BookingConfirmedEvent> context)
     {
         var message = context.Message;

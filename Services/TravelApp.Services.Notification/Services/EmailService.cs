@@ -5,17 +5,33 @@ using MimeKit.Text;
 
 namespace TravelApp.Services.Notification.Services;
 
+/// <summary>
+/// Sends transactional HTML emails via SMTP using MailKit.
+/// SMTP settings (host, port, credentials, sender) are read from application configuration.
+/// </summary>
 public class EmailService : IEmailService
 {
     private readonly IConfiguration _config;
     private readonly ILogger<EmailService> _logger;
 
+    /// <summary>
+    /// Initializes a new instance of <see cref="EmailService"/>.
+    /// </summary>
+    /// <param name="config">The application configuration for reading SMTP settings.</param>
+    /// <param name="logger">The logger instance.</param>
     public EmailService(IConfiguration config, ILogger<EmailService> logger)
     {
         _config = config;
         _logger = logger;
     }
 
+    /// <summary>
+    /// Builds and sends an HTML email to the specified recipient using SMTP with STARTTLS.
+    /// Logs a warning on failure but does not rethrow, allowing the caller to continue.
+    /// </summary>
+    /// <param name="to">The recipient's email address.</param>
+    /// <param name="subject">The email subject line.</param>
+    /// <param name="body">The HTML body content of the email.</param>
     public async Task SendEmailAsync(string to, string subject, string body)
     {
         var email = new MimeMessage();

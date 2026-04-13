@@ -16,7 +16,9 @@ namespace TravelApp.Services.Trip.Controllers
     public class TripsController(ITripService _service) : ControllerBase
     {
 
-        // Retrieves all trips for the currently authenticated user
+        /// <summary>
+        /// Retrieves all trips for the currently authenticated user
+        /// </summary>
         [HttpGet]
         public async Task<ActionResult<IEnumerable<TripDto>>> GetMine()
         {
@@ -29,7 +31,9 @@ namespace TravelApp.Services.Trip.Controllers
             return Ok(result);
         }
 
-        // Retrieves a specific trip by its ID
+        /// <summary>
+        /// Retrieves a specific trip by its ID
+        /// </summary>
         [HttpGet("{id}")]
         public async Task<ActionResult<TripDto>> GetById(int id)
         {
@@ -43,7 +47,9 @@ namespace TravelApp.Services.Trip.Controllers
         }
 
 
-        // Creates a new trip for the user
+        /// <summary>
+        /// Creates a new trip for the user
+        /// </summary>
         [HttpPost]
         public async Task<ActionResult<TripDto>> Create(CreateTripDto dto)
         {
@@ -58,7 +64,9 @@ namespace TravelApp.Services.Trip.Controllers
             return Ok(result);
         }
 
-        // Generates an AI-driven itinerary for a trip
+        /// <summary>
+        /// Generates an AI-driven itinerary for a trip
+        /// </summary>
         [HttpPost("generate-itinerary")]
         public async Task<ActionResult<TripDto>> GenerateItinerary(GenerateItineraryDto dto)
         {
@@ -70,7 +78,9 @@ namespace TravelApp.Services.Trip.Controllers
         }
 
 
-        // Deletes a trip
+        /// <summary>
+        /// Deletes a trip
+        /// </summary>
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(int id)
         {

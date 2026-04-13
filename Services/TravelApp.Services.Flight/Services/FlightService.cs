@@ -5,12 +5,21 @@ using TravelApp.Services.Flight.Interfaces;
 
 namespace TravelApp.Services.Flight.Services;
 
+/// <summary>
+/// Implements flight search business logic, including Redis caching and cabin class mapping.
+/// </summary>
 public class FlightService : IFlightService
 {
     private readonly IFlightRepository _repo;
     private readonly ILogger<FlightService> _logger;
     private readonly IDistributedCache _cache;
 
+    /// <summary>
+    /// Initializes a new instance of <see cref="FlightService"/>.
+    /// </summary>
+    /// <param name="repo">The flight data access repository.</param>
+    /// <param name="logger">The logger instance.</param>
+    /// <param name="cache">The distributed Redis cache.</param>
     public FlightService(IFlightRepository repo, ILogger<FlightService> logger, IDistributedCache cache)
     {
         _repo = repo;
@@ -18,6 +27,17 @@ public class FlightService : IFlightService
         _cache = cache;
     }
 
+    /// <summary>
+    /// Searches for available flight offers between two airports on a given date.
+    /// Results are cached in Redis for 1 hour (sliding 15 minutes) to reduce external API calls.
+    /// Maps string cabin class to SerpApi numeric travel class before querying.
+    /// </summary>
+    /// <param name="origin">The IATA code of the departure airport (e.g., <c>"DEL"</c>).</param>
+    /// <param name="destination">The IATA code of the arrival airport (e.g., <c>"BOM"</c>).</param>
+    /// <param name="date">The departure date in <c>YYYY-MM-DD</c> format.</param>
+    /// <param name="adults">The number of adult passengers. Defaults to 1.</param>
+    /// <param name="cabinClass">The cabin class string (e.g., <c>"ECONOMY"</c>, <c>"BUSINESS"</c>). Defaults to <c>"ECONOMY"</c>.</param>
+    /// <returns>A list of up to 15 <see cref="FlightOfferDto"/> results, or an empty list on failure.</returns>
     public async Task<List<FlightOfferDto>> SearchFlightsAsync(string origin, string destination, string date, int adults = 1, string cabinClass = "ECONOMY")
     {
         try

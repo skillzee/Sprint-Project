@@ -5,17 +5,32 @@ using System.Text.Json;
 
 namespace TravelApp.Shared.Middleware;
 
+/// <summary>
+/// ASP.NET Core middleware that catches any unhandled exceptions thrown during request processing
+/// and returns a standardized RFC 7807 <c>ProblemDetails</c> JSON response with HTTP 500.
+/// Register this middleware early in the pipeline (before <c>UseRouting</c>) so it wraps all subsequent middleware.
+/// </summary>
 public class GlobalExceptionHandlerMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ILogger<GlobalExceptionHandlerMiddleware> _logger;
 
+    /// <summary>
+    /// Initializes a new instance of <see cref="GlobalExceptionHandlerMiddleware"/>.
+    /// </summary>
+    /// <param name="next">The next middleware delegate in the pipeline.</param>
+    /// <param name="logger">The logger used to record unhandled exceptions.</param>
     public GlobalExceptionHandlerMiddleware(RequestDelegate next, ILogger<GlobalExceptionHandlerMiddleware> logger)
     {
         _next = next;
         _logger = logger;
     }
 
+    /// <summary>
+    /// Invokes the middleware. Passes the request to the next delegate and catches any unhandled exceptions,
+    /// delegating error response writing to <see cref="HandleExceptionAsync"/>.
+    /// </summary>
+    /// <param name="context">The current HTTP context.</param>
     public async Task InvokeAsync(HttpContext context)
     {
         try
@@ -29,6 +44,11 @@ public class GlobalExceptionHandlerMiddleware
         }
     }
 
+    /// <summary>
+    /// Writes a <c>ProblemDetails</c> JSON response with HTTP 500 to the current response.
+    /// </summary>
+    /// <param name="context">The current HTTP context.</param>
+    /// <param name="exception">The unhandled exception that was caught.</param>
     private static Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
         context.Response.ContentType = "application/json";

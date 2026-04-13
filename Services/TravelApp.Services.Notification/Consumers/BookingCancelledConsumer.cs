@@ -4,17 +4,31 @@ using TravelApp.Shared;
 
 namespace TravelApp.Services.Notification.Consumers;
 
+/// <summary>
+/// MassTransit consumer that handles <see cref="BookingCancelledEvent"/> messages from RabbitMQ.
+/// Sends a styled HTML booking cancellation email to the user.
+/// </summary>
 public class BookingCancelledConsumer : IConsumer<BookingCancelledEvent>
 {
     private readonly ILogger<BookingCancelledConsumer> _logger;
     private readonly IEmailService _emailService;
 
+    /// <summary>
+    /// Initializes a new instance of <see cref="BookingCancelledConsumer"/>.
+    /// </summary>
+    /// <param name="logger">The logger instance.</param>
+    /// <param name="emailService">The email service used to send the cancellation email.</param>
     public BookingCancelledConsumer(ILogger<BookingCancelledConsumer> logger, IEmailService emailService)
     {
         _logger = logger;
         _emailService = emailService;
     }
 
+    /// <summary>
+    /// Processes a <see cref="BookingCancelledEvent"/> by sending a cancellation notification email
+    /// with the booking reference and hotel name.
+    /// </summary>
+    /// <param name="context">The MassTransit consume context containing the event message.</param>
     public async Task Consume(ConsumeContext<BookingCancelledEvent> context)
     {
         var message = context.Message;

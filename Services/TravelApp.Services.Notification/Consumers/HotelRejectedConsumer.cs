@@ -4,17 +4,31 @@ using TravelApp.Shared;
 
 namespace TravelApp.Services.Notification.Consumers;
 
+/// <summary>
+/// MassTransit consumer that handles <see cref="HotelRejectedEvent"/> messages from RabbitMQ.
+/// Sends a styled HTML rejection notification email to the Hotel Manager, including the rejection reason if provided.
+/// </summary>
 public class HotelRejectedConsumer : IConsumer<HotelRejectedEvent>
 {
     private readonly ILogger<HotelRejectedConsumer> _logger;
     private readonly IEmailService _emailService;
 
+    /// <summary>
+    /// Initializes a new instance of <see cref="HotelRejectedConsumer"/>.
+    /// </summary>
+    /// <param name="logger">The logger instance.</param>
+    /// <param name="emailService">The email service used to send the rejection email.</param>
     public HotelRejectedConsumer(ILogger<HotelRejectedConsumer> logger, IEmailService emailService)
     {
         _logger = logger;
         _emailService = emailService;
     }
 
+    /// <summary>
+    /// Processes a <see cref="HotelRejectedEvent"/> by sending a rejection notification email
+    /// to the Hotel Manager. Includes the rejection reason section only when a reason is provided.
+    /// </summary>
+    /// <param name="context">The MassTransit consume context containing the event message.</param>
     public async Task Consume(ConsumeContext<HotelRejectedEvent> context)
     {
         var message = context.Message;

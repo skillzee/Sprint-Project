@@ -25,7 +25,9 @@ namespace TravelApp.Services.Booking.Controllers
 
         
 
-        // Retrieves all bookings with total revenue (Admin only)
+        /// <summary>
+        /// Retrieves all bookings with total revenue (Admin only)
+        /// </summary>
         [HttpGet]
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult> GetAll()
@@ -36,7 +38,9 @@ namespace TravelApp.Services.Booking.Controllers
 
 
 
-        // Retrieves bookings for the currently authenticated user
+        /// <summary>
+        /// Retrieves bookings for the currently authenticated user
+        /// </summary>
         [HttpGet("my")]
         [Authorize]
         public async Task<ActionResult<IEnumerable<BookingDto>>> GetMine()
@@ -46,7 +50,9 @@ namespace TravelApp.Services.Booking.Controllers
             return Ok(result);
         }
 
-        // Creates a new booking
+        /// <summary>
+        /// Creates a new booking
+        /// </summary>
         [HttpPost]
         [Authorize]
         public async Task<ActionResult> Create(CreateBookingDto dto)
@@ -66,7 +72,9 @@ namespace TravelApp.Services.Booking.Controllers
         }
 
 
-        // Cancels an existing booking
+        /// <summary>
+        /// Cancels an existing booking
+        /// </summary>
         [HttpPut("cancel/{id}")]
         [Authorize]
         public async Task<ActionResult> Cancel(int id)

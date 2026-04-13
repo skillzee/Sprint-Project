@@ -11,7 +11,9 @@ namespace TravelApp.Services.Flight.Controllers
     public class FlightsController(IFlightService flightService) : ControllerBase
     {
 
-        // Searches for available flights based on origin, destination, date, adults, and cabin class
+        /// <summary>
+        /// Searches for available flights based on origin, destination, date, adults, and cabin class
+        /// </summary>
         [HttpGet]
         public async Task<ActionResult<IEnumerable<FlightOfferDto>>> Search([FromQuery] string origin = "DEL",
         [FromQuery] string destination = "BOM",
@@ -26,7 +28,9 @@ namespace TravelApp.Services.Flight.Controllers
 
 
 
-        // Retrieves a list of supported airports
+        /// <summary>
+        /// Retrieves a list of supported airports
+        /// </summary>
         [HttpGet("airports")]
         public ActionResult<object> GetAirports()
         {

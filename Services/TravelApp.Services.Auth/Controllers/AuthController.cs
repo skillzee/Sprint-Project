@@ -15,7 +15,9 @@ public class AuthController : ControllerBase
         _authService = authService;
     }
 
-    // Registers a new user account
+    /// <summary>
+    /// Registers a new user account
+    /// </summary>
     [HttpPost("register")]
     public async Task<ActionResult<AuthResponseDto>> Register(RegisterDto dto)
     {
@@ -29,7 +31,9 @@ public class AuthController : ControllerBase
         };
     }
 
-    // Authenticates a user and returns a JWT token
+    /// <summary>
+    /// Authenticates a user and returns a JWT token
+    /// </summary>
     [HttpPost("login")]
     public async Task<ActionResult<AuthResponseDto>> Login(LoginDto dto)
     {
@@ -40,7 +44,9 @@ public class AuthController : ControllerBase
         return Ok(result);
     }
 
-    // Authenticates a user via Google login and returns a JWT token
+    /// <summary>
+    /// Authenticates a user via Google login and returns a JWT token
+    /// </summary>
     [HttpPost("google-login")]
     public async Task<ActionResult<AuthResponseDto>> GoogleLogin(GoogleLoginDto dto)
     {
