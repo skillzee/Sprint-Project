@@ -25,61 +25,89 @@ namespace TravelApp.Services.Booking.Controllers
 
         
 
+        // Retrieves all bookings with total revenue (Admin only)
         [HttpGet]
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult> GetAll()
         {
-            var result = await _service.GetAllBookingWithRevenueAsync();
-
-            return Ok(result);
-
+            try
+            {
+                var result = await _service.GetAllBookingWithRevenueAsync();
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while fetching all bookings.", error = ex.Message });
+            }
         }
 
 
 
+        // Retrieves bookings for the currently authenticated user
         [HttpGet("my")]
         [Authorize]
         public async Task<ActionResult<IEnumerable<BookingDto>>> GetMine()
         {
-            var userId = GetUserId();
-            var result = await _service.GetUserBookingsAsync(userId);
-            return Ok(result);
+            try
+            {
+                var userId = GetUserId();
+                var result = await _service.GetUserBookingsAsync(userId);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while fetching your bookings.", error = ex.Message });
+            }
         }
 
+        // Creates a new booking
         [HttpPost]
         [Authorize]
         public async Task<ActionResult> Create(CreateBookingDto dto)
         {
-            var userId = GetUserId();
-            var userName = User.FindFirstValue(ClaimTypes.Name) ?? "";
-            var userEmail = User.FindFirstValue(ClaimTypes.Email) ?? "";
-
-            var result = await _service.CreateBookingAsync(dto, userId, userName, userEmail);
-
-            if (result.result == null)
+            try
             {
-                return BadRequest(result.errorMessage ?? "Invalid booking data");
+                var userId = GetUserId();
+                var userName = User.FindFirstValue(ClaimTypes.Name) ?? "";
+                var userEmail = User.FindFirstValue(ClaimTypes.Email) ?? "";
+
+                var result = await _service.CreateBookingAsync(dto, userId, userName, userEmail);
+
+                if (result.result == null)
+                {
+                    return BadRequest(result.errorMessage ?? "Invalid booking data");
+                }
+
+                return Ok(result.result);
             }
-
-            return Ok(result.result);
-
-
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while creating booking.", error = ex.Message });
+            }
         }
 
 
+        // Cancels an existing booking
         [HttpPut("cancel/{id}")]
         [Authorize]
         public async Task<ActionResult> Cancel(int id)
         {
-            var userId = GetUserId();
-            var role = User.FindFirstValue(ClaimTypes.Role) ?? "";
+            try
+            {
+                var userId = GetUserId();
+                var role = User.FindFirstValue(ClaimTypes.Role) ?? "";
 
-            var success = await _service.CancelBookingAsync(id, userId, role);
+                var success = await _service.CancelBookingAsync(id, userId, role);
 
-            if (!success)
-                return BadRequest("Unable to cancel booking");
+                if (!success)
+                    return BadRequest("Unable to cancel booking");
 
-            return Ok(new { message = "Booking cancelled" });
+                return Ok(new { message = "Booking cancelled" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while cancelling booking.", error = ex.Message });
+            }
         }
 
 
