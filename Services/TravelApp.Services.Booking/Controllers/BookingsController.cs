@@ -83,7 +83,7 @@ namespace TravelApp.Services.Booking.Controllers
         }
 
 
-        public int GetUserId()
+        private int GetUserId()
         {
             var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
 

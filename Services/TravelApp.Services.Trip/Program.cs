@@ -12,8 +12,8 @@ using TravelApp.Services.Trip.Services;
 
 using TravelApp.Shared.Middleware;
 
-var builder = WebApplication.CreateBuilder(args);
 Env.Load();
+var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
