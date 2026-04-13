@@ -2,6 +2,8 @@ using MassTransit;
 using TravelApp.Services.Notification.Consumers;
 using TravelApp.Services.Notification.Services;
 
+using TravelApp.Shared.Middleware;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -31,6 +33,8 @@ builder.Services.AddMassTransit(x =>
 });
 
 var app = builder.Build();
+
+app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

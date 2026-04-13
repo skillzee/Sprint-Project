@@ -8,6 +8,8 @@ using TravelApp.Services.Booking.Interfaces;
 using TravelApp.Services.Booking.Repositories;
 using TravelApp.Services.Booking.Services;
 
+using TravelApp.Shared.Middleware;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -69,6 +71,9 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
+
 app.UseCors("AllowAll");
 
 app.UseAuthentication();

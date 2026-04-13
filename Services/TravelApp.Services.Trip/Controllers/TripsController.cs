@@ -20,40 +20,26 @@ namespace TravelApp.Services.Trip.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<TripDto>>> GetMine()
         {
-            try
+            var userId = GetUserId();
+            var result = await _service.GetUserTripsAsync(userId);
+            if (result == null)
             {
-                var userId = GetUserId();
-                var result = await _service.GetUserTripsAsync(userId);
-                if (result == null)
-                {
-                    return BadRequest();
-                }
-                return Ok(result);
+                return BadRequest();
             }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "An error occurred fetching user trips.", error = ex.Message });
-            }
+            return Ok(result);
         }
 
         // Retrieves a specific trip by its ID
         [HttpGet("{id}")]
         public async Task<ActionResult<TripDto>> GetById(int id)
         {
-            try
+            var userId = GetUserId();
+            var result = await _service.GetTripByIdAsync(id, userId);
+            if (result == null)
             {
-                var userId = GetUserId();
-                var result = await _service.GetTripByIdAsync(id, userId);
-                if (result == null)
-                {
-                    return NotFound();
-                }
-                return Ok(result);
+                return NotFound();
             }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "An error occurred fetching the trip.", error = ex.Message });
-            }
+            return Ok(result);
         }
 
 
@@ -61,40 +47,26 @@ namespace TravelApp.Services.Trip.Controllers
         [HttpPost]
         public async Task<ActionResult<TripDto>> Create(CreateTripDto dto)
         {
-            try
-            {
-                var userId = GetUserId();
-                var result = await _service.CreateTripAsync(dto, userId);
+            var userId = GetUserId();
+            var result = await _service.CreateTripAsync(dto, userId);
 
-                if (result == null)
-                {
-                    return BadRequest();
-                }
-
-                return Ok(result);
-            }
-            catch (Exception ex)
+            if (result == null)
             {
-                return StatusCode(500, new { message = "An error occurred creating the trip.", error = ex.Message });
+                return BadRequest();
             }
+
+            return Ok(result);
         }
 
         // Generates an AI-driven itinerary for a trip
         [HttpPost("generate-itinerary")]
         public async Task<ActionResult<TripDto>> GenerateItinerary(GenerateItineraryDto dto)
         {
-            try
-            {
-                int userId = GetUserId();
-                var result = await _service.GenerateItineraryAsync(dto, userId);
-                if (result == null)
-                    return BadRequest(new { message = "Trip not found." });
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "An error occurred generating the itinerary.", error = ex.Message });
-            }
+            int userId = GetUserId();
+            var result = await _service.GenerateItineraryAsync(dto, userId);
+            if (result == null)
+                return BadRequest(new { message = "Trip not found." });
+            return Ok(result);
         }
 
 
@@ -102,22 +74,15 @@ namespace TravelApp.Services.Trip.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(int id)
         {
-            try
-            {
-                int userId = GetUserId();
-                var result = await _service.DeleteTripAsync(id, userId);
+            int userId = GetUserId();
+            var result = await _service.DeleteTripAsync(id, userId);
 
-                if (result == false)
-                {
-                    return NotFound(new { message = "Trip not found or you don't have permission to delete it." });
-                }
-
-                return NoContent();
-            }
-            catch (Exception ex)
+            if (result == false)
             {
-                return StatusCode(500, new { message = "An error occurred deleting the trip.", error = ex.Message });
+                return NotFound(new { message = "Trip not found or you don't have permission to delete it." });
             }
+
+            return NoContent();
         }
 
 

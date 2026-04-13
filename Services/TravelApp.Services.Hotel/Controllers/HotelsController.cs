@@ -23,32 +23,18 @@ namespace TravelApp.Services.Hotel.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<HotelDto>>> GetAll([FromQuery] string? city)
         {
-            try
-            {
-                var result = await _hotelService.GetHotelsAsync(city);
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "An error occurred fetching all hotels.", error = ex.Message });
-            }
+            var result = await _hotelService.GetHotelsAsync(city);
+            return Ok(result);
         }
 
         // Retrieves details for a specific hotel by ID
         [HttpGet("{id}")]
         public async Task<ActionResult<HotelDto>> Get(int id)
         {
-            try
-            {
-                var result = await _hotelService.GetHotelByIdAsync(id);
-                if (result == null)
-                    return NotFound();
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "An error occurred fetching hotel details.", error = ex.Message });
-            }
+            var result = await _hotelService.GetHotelByIdAsync(id);
+            if (result == null)
+                return NotFound();
+            return Ok(result);
         }
 
         // ── Internal service-to-service endpoint ─────────────────────────────
@@ -57,17 +43,10 @@ namespace TravelApp.Services.Hotel.Controllers
         [HttpGet("rooms/{roomId}/status")]
         public async Task<ActionResult> GetRoomStatus(int roomId)
         {
-            try
-            {
-                var room = await _hotelService.GetRoomStatusAsync(roomId);
-                if (room == null)
-                    return NotFound();
-                return Ok(room);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "An error occurred fetching room status.", error = ex.Message });
-            }
+            var room = await _hotelService.GetRoomStatusAsync(roomId);
+            if (room == null)
+                return NotFound();
+            return Ok(room);
         }
 
         // ── HotelManager endpoints ────────────────────────────────────────────
@@ -77,19 +56,12 @@ namespace TravelApp.Services.Hotel.Controllers
         [Authorize(Roles = "HotelManager")]
         public async Task<ActionResult> Create(CreateHotelDto dto)
         {
-            try
-            {
-                var ownerId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-                var ownerEmail = User.FindFirstValue(ClaimTypes.Email) ?? "";
-                var ownerName = User.FindFirstValue(ClaimTypes.Name) ?? "";
+            var ownerId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var ownerEmail = User.FindFirstValue(ClaimTypes.Email) ?? "";
+            var ownerName = User.FindFirstValue(ClaimTypes.Name) ?? "";
 
-                var result = await _hotelService.CreateHotelAsync(dto, ownerId, ownerEmail, ownerName);
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "An error occurred creating hotel.", error = ex.Message });
-            }
+            var result = await _hotelService.CreateHotelAsync(dto, ownerId, ownerEmail, ownerName);
+            return Ok(result);
         }
 
         // Adds a room to an existing hotel owned by the manager
@@ -97,20 +69,13 @@ namespace TravelApp.Services.Hotel.Controllers
         [Authorize(Roles = "HotelManager")]
         public async Task<ActionResult> AddRoom(int id, CreateRoomDto dto)
         {
-            try
-            {
-                var requestingUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-                var result = await _hotelService.AddRoomToHotelAsync(id, dto, requestingUserId);
+            var requestingUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var result = await _hotelService.AddRoomToHotelAsync(id, dto, requestingUserId);
 
-                if (result == null)
-                    return Forbid();
+            if (result == null)
+                return Forbid();
 
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "An error occurred adding room.", error = ex.Message });
-            }
+            return Ok(result);
         }
 
         // Retrieves all hotels owned by the current Hotel Manager
@@ -118,16 +83,9 @@ namespace TravelApp.Services.Hotel.Controllers
         [Authorize(Roles = "HotelManager")]
         public async Task<ActionResult<IEnumerable<HotelDto>>> GetMyHotels()
         {
-            try
-            {
-                var ownerId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-                var result = await _hotelService.GetHotelsByOwnerAsync(ownerId);
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "An error occurred fetching your hotels.", error = ex.Message });
-            }
+            var ownerId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var result = await _hotelService.GetHotelsByOwnerAsync(ownerId);
+            return Ok(result);
         }
 
         // ── Admin endpoints ───────────────────────────────────────────────────
@@ -137,15 +95,8 @@ namespace TravelApp.Services.Hotel.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult<IEnumerable<HotelDto>>> GetPending()
         {
-            try
-            {
-                var result = await _hotelService.GetPendingHotelsAsync();
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "An error occurred fetching pending hotels.", error = ex.Message });
-            }
+            var result = await _hotelService.GetPendingHotelsAsync();
+            return Ok(result);
         }
 
         // Retrieves all pending rooms awaiting admin approval
@@ -153,15 +104,8 @@ namespace TravelApp.Services.Hotel.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult<IEnumerable<RoomDto>>> GetPendingRooms()
         {
-            try
-            {
-                var result = await _hotelService.GetPendingRoomsAsync();
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "An error occurred fetching pending rooms.", error = ex.Message });
-            }
+            var result = await _hotelService.GetPendingRoomsAsync();
+            return Ok(result);
         }
 
         // Approves a pending hotel
@@ -169,17 +113,10 @@ namespace TravelApp.Services.Hotel.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult<HotelDto>> ApproveHotel(int id)
         {
-            try
-            {
-                var result = await _hotelService.ApproveHotelAsync(id);
-                if (result == null)
-                    return NotFound();
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "An error occurred approving hotel.", error = ex.Message });
-            }
+            var result = await _hotelService.ApproveHotelAsync(id);
+            if (result == null)
+                return NotFound();
+            return Ok(result);
         }
 
         // Rejects a pending hotel with a reason
@@ -187,17 +124,10 @@ namespace TravelApp.Services.Hotel.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult<HotelDto>> RejectHotel(int id, [FromBody] RejectDto dto)
         {
-            try
-            {
-                var result = await _hotelService.RejectHotelAsync(id, dto.Reason);
-                if (result == null)
-                    return NotFound();
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "An error occurred rejecting hotel.", error = ex.Message });
-            }
+            var result = await _hotelService.RejectHotelAsync(id, dto.Reason);
+            if (result == null)
+                return NotFound();
+            return Ok(result);
         }
 
         // Approves a pending room within a hotel
@@ -205,17 +135,10 @@ namespace TravelApp.Services.Hotel.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult<RoomDto>> ApproveRoom(int hotelId, int roomId)
         {
-            try
-            {
-                var result = await _hotelService.ApproveRoomAsync(hotelId, roomId);
-                if (result == null)
-                    return NotFound();
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "An error occurred approving room.", error = ex.Message });
-            }
+            var result = await _hotelService.ApproveRoomAsync(hotelId, roomId);
+            if (result == null)
+                return NotFound();
+            return Ok(result);
         }
 
         // Rejects a pending room within a hotel
@@ -223,17 +146,10 @@ namespace TravelApp.Services.Hotel.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult<RoomDto>> RejectRoom(int hotelId, int roomId)
         {
-            try
-            {
-                var result = await _hotelService.RejectRoomAsync(hotelId, roomId);
-                if (result == null)
-                    return NotFound();
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "An error occurred rejecting room.", error = ex.Message });
-            }
+            var result = await _hotelService.RejectRoomAsync(hotelId, roomId);
+            if (result == null)
+                return NotFound();
+            return Ok(result);
         }
 
         // ── Existing Admin endpoint ───────────────────────────────────────────
@@ -243,17 +159,10 @@ namespace TravelApp.Services.Hotel.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult> Delete(int id)
         {
-            try
-            {
-                var result = await _hotelService.DeleteHotelAsync(id);
-                if (!result)
-                    return BadRequest();
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "An error occurred deleting hotel.", error = ex.Message });
-            }
+            var result = await _hotelService.DeleteHotelAsync(id);
+            if (!result)
+                return BadRequest();
+            return Ok();
         }
     }
 

@@ -8,6 +8,8 @@ using TravelApp.Services.Auth.Interfaces;
 using TravelApp.Services.Auth.Repositories;
 using TravelApp.Services.Auth.Services;
 
+using TravelApp.Shared.Middleware;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container
@@ -45,6 +47,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 
 var app = builder.Build();
+
+app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
 
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())

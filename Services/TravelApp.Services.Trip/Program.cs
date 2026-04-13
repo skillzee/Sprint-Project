@@ -10,6 +10,8 @@ using TravelApp.Services.Trip.Repositories;
 using TravelApp.Services.Trip.Services;
 
 
+using TravelApp.Shared.Middleware;
+
 var builder = WebApplication.CreateBuilder(args);
 Env.Load();
 
@@ -61,6 +63,8 @@ builder.Services.AddCors(o => o.AddPolicy("AllowAll",
 p => p.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
 
 var app = builder.Build();
+
+app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
