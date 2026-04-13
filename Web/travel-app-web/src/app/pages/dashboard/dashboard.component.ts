@@ -60,7 +60,7 @@ export class DashboardComponent {
   loadHotels(){
     this.hotelService.getHotels().subscribe({
       next: res=>this.hotels.set(res),
-      error: err=>console.error(err)
+      error: ()=>{}
     })
   }
 
@@ -83,25 +83,29 @@ export class DashboardComponent {
 
   approveHotel(id: number){
     this.hotelService.approveHotel(id).subscribe({
-      next: () => this.pendingHotels.update(list => list.filter(h => h.id !== id))
+      next: () => this.pendingHotels.update(list => list.filter(h => h.id !== id)),
+      error: () => {}
     });
   }
 
   rejectHotel(id: number){
     this.hotelService.rejectHotel(id).subscribe({
-      next: () => this.pendingHotels.update(list => list.filter(h => h.id !== id))
+      next: () => this.pendingHotels.update(list => list.filter(h => h.id !== id)),
+      error: () => {}
     });
   }
 
   approveRoom(hotelId: number, roomId: number){
     this.hotelService.approveRoom(hotelId, roomId).subscribe({
-      next: () => this.pendingRooms.update(list => list.filter(r => r.id !== roomId))
+      next: () => this.pendingRooms.update(list => list.filter(r => r.id !== roomId)),
+      error: () => {}
     });
   }
 
   rejectRoom(hotelId: number, roomId: number){
     this.hotelService.rejectRoom(hotelId, roomId).subscribe({
-      next: () => this.pendingRooms.update(list => list.filter(r => r.id !== roomId))
+      next: () => this.pendingRooms.update(list => list.filter(r => r.id !== roomId)),
+      error: () => {}
     });
   }
 

@@ -117,6 +117,9 @@ export class TripsComponent {
       next: () => {
         this.trips.update(ts => ts.filter(t => t.id !== id));
         if (this.selectedTrip()?.id === id) this.selectedTrip.set(null);
+      },
+      error: () => {
+        this.generateError.set('Failed to delete trip. Please try again.');
       }
     });
   }
