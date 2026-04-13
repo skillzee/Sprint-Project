@@ -27,7 +27,7 @@ This service follows a **Layered Architecture**:
 - **Framework**: ASP.NET Core 10.0
 - **Database**: SQL Server
 - **ORM**: Entity Framework Core
-- **Authentication**: JWT, ASP.NET Core Identity (if applicable)
+- **Authentication**: JWT
 
 ---
 

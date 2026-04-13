@@ -10,6 +10,10 @@ public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
 
+    /// <summary>
+    /// Constructor for AuthController which injects authService
+    /// </summary>
+    /// <param name="authService"></param>
     public AuthController(IAuthService authService)
     {
         _authService = authService;
