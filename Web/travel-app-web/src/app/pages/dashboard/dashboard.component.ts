@@ -20,6 +20,7 @@ export class DashboardComponent {
   bookings = signal<any[]>([]);
   totalRevenue = signal(0);
   loading = signal(true);
+  cancelling = signal<number | null>(null);
 
   hotels = signal<Hotel[]>([]);
   hotelSaving = signal(false);
@@ -171,6 +172,19 @@ export class DashboardComponent {
 
   cancelledCount(){ 
     return this.bookings().filter(b => b.status === 'Cancelled').length; 
+  }
+
+  cancelBooking(id: number){
+    if(!confirm('Are you sure you want to cancel this booking?')) return;
+    
+    this.cancelling.set(id);
+    this.bookingService.cancel(id).subscribe({
+      next: () => {
+        this.bookings.update(list => list.map(b => b.id === id ? { ...b, status: 'Cancelled' } : b));
+        this.cancelling.set(null);
+      },
+      error: () => this.cancelling.set(null)
+    });
   }
 
 

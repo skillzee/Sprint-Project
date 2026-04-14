@@ -59,6 +59,7 @@
                     <th>Check-out</th>
                     <th>Amount</th>
                     <th>Status</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -72,6 +73,15 @@
                       <td>{{ b.checkOutDate | date:'d MMM' }}</td>
                       <td class="amount">₹{{ b.totalPrice | number }}</td>
                       <td><span class="badge" [class]="'badge-' + b.status.toLowerCase()">{{ b.status }}</span></td>
+                      <td>
+                        @if(b.status === 'Confirmed') {
+                          <button class="btn btn-sm btn-rust" [disabled]="cancelling() === b.id" (click)="cancelBooking(b.id)">
+                            {{ cancelling() === b.id ? '...' : 'Cancel' }}
+                          </button>
+                        } @else {
+                          <span style="color:var(--gray);font-style:italic;font-size:0.75rem">No actions</span>
+                        }
+                      </td>
                     </tr>
                   }
                 </tbody>
