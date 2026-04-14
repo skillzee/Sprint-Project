@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using TravelApp.Services.Auth.DTOs;
 using TravelApp.Services.Auth.Interfaces;
+using TravelApp.Shared.Exceptions;
 
 namespace TravelApp.Services.Auth.Controllers;
 
@@ -9,14 +10,17 @@ namespace TravelApp.Services.Auth.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
+    private readonly ILogger<AuthController> _logger;
 
     /// <summary>
-    /// Constructor for AuthController which injects authService
+    /// Constructor for AuthController which injects authService and logger
     /// </summary>
-    /// <param name="authService"></param>
-    public AuthController(IAuthService authService)
+    /// <param name="authService">Authentication service</param>
+    /// <param name="logger">Logger instance</param>
+    public AuthController(IAuthService authService, ILogger<AuthController> logger)
     {
         _authService = authService;
+        _logger = logger;
     }
 
     /// <summary>
@@ -25,14 +29,22 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public async Task<ActionResult<AuthResponseDto>> Register(RegisterDto dto)
     {
-        var result = await _authService.RegisterAsync(dto);
-        return result switch
+        try
         {
-            RegisterResult.Success s => Ok(s.Response),
-            RegisterResult.RoleForbidden f => BadRequest(new { message = $"Role '{f.Role}' cannot be self-assigned." }),
-            RegisterResult.EmailAlreadyExists => BadRequest(new { message = "Registration failed. Email might already exist." }),
-            _ => BadRequest(new { message = "Registration failed." })
-        };
+            var result = await _authService.RegisterAsync(dto);
+            return result switch
+            {
+                RegisterResult.Success s => Ok(s.Response),
+                RegisterResult.RoleForbidden f => BadRequest(new { message = $"Role '{f.Role}' cannot be self-assigned." }),
+                RegisterResult.EmailAlreadyExists => BadRequest(new { message = "Registration failed. Email might already exist." }),
+                _ => BadRequest(new { message = "Registration failed." })
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error during user registration for email: {Email}", dto.Email);
+            throw;
+        }
     }
 
     /// <summary>
@@ -41,11 +53,19 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<ActionResult<AuthResponseDto>> Login(LoginDto dto)
     {
-        var result = await _authService.LoginAsync(dto);
-        if (result == null)
-            return Unauthorized(new { message = "Invalid email or password." });
+        try
+        {
+            var result = await _authService.LoginAsync(dto);
+            if (result == null)
+                return Unauthorized(new { message = "Invalid email or password." });
 
-        return Ok(result);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error during user login for email: {Email}", dto.Email);
+            throw;
+        }
     }
 
     /// <summary>
@@ -54,10 +74,18 @@ public class AuthController : ControllerBase
     [HttpPost("google-login")]
     public async Task<ActionResult<AuthResponseDto>> GoogleLogin(GoogleLoginDto dto)
     {
-        var result = await _authService.GoogleLoginAsync(dto.IdToken);
-        if (result == null)
-            return Unauthorized(new { message = "Invalid Google token." });
+        try
+        {
+            var result = await _authService.GoogleLoginAsync(dto.IdToken);
+            if (result == null)
+                return Unauthorized(new { message = "Invalid Google token." });
 
-        return Ok(result);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error during Google login");
+            throw;
+        }
     }
 }

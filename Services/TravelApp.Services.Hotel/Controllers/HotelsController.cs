@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using TravelApp.Services.Hotel.DTOs;
 using TravelApp.Services.Hotel.Interfaces;
+using TravelApp.Shared.Exceptions;
+using Microsoft.Extensions.Logging;
 
 namespace TravelApp.Services.Hotel.Controllers
 {
@@ -11,10 +13,12 @@ namespace TravelApp.Services.Hotel.Controllers
     public class HotelsController : ControllerBase
     {
         private readonly IHotelService _hotelService;
+        private readonly ILogger<HotelsController> _logger;
 
-        public HotelsController(IHotelService hotelService)
+        public HotelsController(IHotelService hotelService, ILogger<HotelsController> logger)
         {
             _hotelService = hotelService;
+            _logger = logger;
         }
 
         // ── Public endpoints ──────────────────────────────────────────────────
@@ -25,8 +29,16 @@ namespace TravelApp.Services.Hotel.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<HotelDto>>> GetAll([FromQuery] string? city)
         {
-            var result = await _hotelService.GetHotelsAsync(city);
-            return Ok(result);
+            try
+            {
+                var result = await _hotelService.GetHotelsAsync(city);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving hotels for city: {City}", city);
+                throw;
+            }
         }
 
         /// <summary>
@@ -35,10 +47,18 @@ namespace TravelApp.Services.Hotel.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<HotelDto>> Get(int id)
         {
-            var result = await _hotelService.GetHotelByIdAsync(id);
-            if (result == null)
-                return NotFound();
-            return Ok(result);
+            try
+            {
+                var result = await _hotelService.GetHotelByIdAsync(id);
+                if (result == null)
+                    return NotFound();
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving hotel with id: {Id}", id);
+                throw;
+            }
         }
 
         // ── Internal service-to-service endpoint ─────────────────────────────
@@ -64,12 +84,24 @@ namespace TravelApp.Services.Hotel.Controllers
         [Authorize(Roles = "HotelManager")]
         public async Task<ActionResult> Create(CreateHotelDto dto)
         {
-            var ownerId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-            var ownerEmail = User.FindFirstValue(ClaimTypes.Email) ?? "";
-            var ownerName = User.FindFirstValue(ClaimTypes.Name) ?? "";
+            try
+            {
+                var ownerId = GetUserId();
+                var ownerEmail = User.FindFirstValue(ClaimTypes.Email) ?? "";
+                var ownerName = User.FindFirstValue(ClaimTypes.Name) ?? "";
 
-            var result = await _hotelService.CreateHotelAsync(dto, ownerId, ownerEmail, ownerName);
-            return Ok(result);
+                var result = await _hotelService.CreateHotelAsync(dto, ownerId, ownerEmail, ownerName);
+                return Ok(result);
+            }
+            catch (UnauthorizedException ex)
+            {
+                return Unauthorized(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating hotel");
+                throw;
+            }
         }
 
         /// <summary>
@@ -183,10 +215,31 @@ namespace TravelApp.Services.Hotel.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult> Delete(int id)
         {
-            var result = await _hotelService.DeleteHotelAsync(id);
-            if (!result)
-                return BadRequest();
-            return Ok();
+            try
+            {
+                var result = await _hotelService.DeleteHotelAsync(id);
+                if (!result)
+                    return BadRequest();
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting hotel with id: {Id}", id);
+                throw;
+            }
+        }
+
+        private int GetUserId()
+        {
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userIdClaim))
+                throw new UnauthorizedException("User ID not found in token");
+
+            if (!int.TryParse(userIdClaim, out int userId))
+                throw new UnauthorizedException("Invalid User ID format in token");
+
+            return userId;
         }
     }
 

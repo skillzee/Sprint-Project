@@ -4,6 +4,7 @@ using TravelApp.Services.Auth.DTOs;
 using TravelApp.Services.Auth.Helpers;
 using TravelApp.Services.Auth.Interfaces;
 using TravelApp.Services.Auth.Models;
+using Microsoft.Extensions.Logging;
 
 namespace TravelApp.Services.Auth.Services;
 
@@ -17,6 +18,7 @@ public class AuthService : IAuthService
     private readonly IAuthRepository _authRepo;
     private readonly JwtHelper _jwtHelper;
     private readonly IConfiguration _config;
+    private readonly ILogger<AuthService> _logger;
 
     /// <summary>
     /// Initializes a new instance of <see cref="AuthService"/>.
@@ -24,11 +26,12 @@ public class AuthService : IAuthService
     /// <param name="authRepo">The repository for user data access.</param>
     /// <param name="jwtHelper">The helper for generating JWT tokens.</param>
     /// <param name="config">The application configuration for Google settings.</param>
-    public AuthService(IAuthRepository authRepo, JwtHelper jwtHelper, IConfiguration config)
+    public AuthService(IAuthRepository authRepo, JwtHelper jwtHelper, IConfiguration config, ILogger<AuthService> logger)
     {
         _authRepo = authRepo;
         _jwtHelper = jwtHelper;
         _config = config;
+        _logger = logger;
     }
 
     /// <summary>
@@ -43,32 +46,40 @@ public class AuthService : IAuthService
     /// </returns>
     public async Task<RegisterResult> RegisterAsync(RegisterDto dto)
     {
-        // 0. Role allowlist guard
-        if (!AllowedSelfAssignRoles.Contains(dto.Role))
-            return new RegisterResult.RoleForbidden(dto.Role);
-
-        // 1. Business Check: Does user exist?
-        if (await _authRepo.UserExistsAsync(dto.Email))
+        try
         {
-            return new RegisterResult.EmailAlreadyExists();
+            // 0. Role allowlist guard
+            if (!AllowedSelfAssignRoles.Contains(dto.Role))
+                return new RegisterResult.RoleForbidden(dto.Role);
+
+            // 1. Business Check: Does user exist?
+            if (await _authRepo.UserExistsAsync(dto.Email))
+            {
+                return new RegisterResult.EmailAlreadyExists();
+            }
+
+            // 2. Business Logic: Hash password
+            var user = new User
+            {
+                Name = dto.Name,
+                Email = dto.Email,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
+                Role = dto.Role
+            };
+
+            // 3. Data Access
+            await _authRepo.CreateUserAsync(user);
+
+            // 4. Token Generation
+            var token = _jwtHelper.GenerateToken(user);
+
+            return new RegisterResult.Success(new AuthResponseDto(user.Id, user.Name, user.Email, user.Role, token));
         }
-
-        // 2. Business Logic: Hash password
-        var user = new User
+        catch (Exception ex)
         {
-            Name = dto.Name,
-            Email = dto.Email,
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
-            Role = dto.Role
-        };
-
-        // 3. Data Access
-        await _authRepo.CreateUserAsync(user);
-
-        // 4. Token Generation
-        var token = _jwtHelper.GenerateToken(user);
-
-        return new RegisterResult.Success(new AuthResponseDto(user.Id, user.Name, user.Email, user.Role, token));
+            _logger.LogError(ex, "Failed to register user: {Email}", dto.Email);
+            throw;
+        }
     }
 
     /// <summary>
@@ -78,19 +89,27 @@ public class AuthService : IAuthService
     /// <returns>An <see cref="AuthResponseDto"/> with a JWT, or <c>null</c> if credentials are invalid.</returns>
     public async Task<AuthResponseDto?> LoginAsync(LoginDto dto)
     {
-        // 1. Data Access
-        var user = await _authRepo.GetUserByEmailAsync(dto.Email);
-
-        // 2. Business Logic: Verify Password
-        if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
+        try
         {
-            return null;
+            // 1. Data Access
+            var user = await _authRepo.GetUserByEmailAsync(dto.Email);
+
+            // 2. Business Logic: Verify Password
+            if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
+            {
+                return null;
+            }
+
+            // 3. Token Generation
+            var token = _jwtHelper.GenerateToken(user);
+
+            return new AuthResponseDto(user.Id, user.Name, user.Email, user.Role, token);
         }
-
-        // 3. Token Generation
-        var token = _jwtHelper.GenerateToken(user);
-
-        return new AuthResponseDto(user.Id, user.Name, user.Email, user.Role, token);
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to login user: {Email}", dto.Email);
+            throw;
+        }
     }
 
     /// <summary>

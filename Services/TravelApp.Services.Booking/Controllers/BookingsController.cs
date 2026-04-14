@@ -7,6 +7,8 @@ using System.Security.Claims;
 
 using TravelApp.Services.Booking.DTOs;
 using TravelApp.Services.Booking.Interfaces;
+using TravelApp.Shared.Exceptions;
+using Microsoft.Extensions.Logging;
 
 
 
@@ -18,8 +20,10 @@ namespace TravelApp.Services.Booking.Controllers
     public class BookingsController : ControllerBase
     {
         private readonly IBookingService _service;
-        public BookingsController(IBookingService service) {
+        private readonly ILogger<BookingsController> _logger;
+        public BookingsController(IBookingService service, ILogger<BookingsController> logger) {
             _service = service;
+            _logger = logger;
         }
 
 
@@ -32,8 +36,16 @@ namespace TravelApp.Services.Booking.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult> GetAll()
         {
-            var result = await _service.GetAllBookingWithRevenueAsync();
-            return Ok(result);
+            try
+            {
+                var result = await _service.GetAllBookingWithRevenueAsync();
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving all bookings");
+                throw;
+            }
         }
 
 
@@ -45,9 +57,21 @@ namespace TravelApp.Services.Booking.Controllers
         [Authorize]
         public async Task<ActionResult<IEnumerable<BookingDto>>> GetMine()
         {
-            var userId = GetUserId();
-            var result = await _service.GetUserBookingsAsync(userId);
-            return Ok(result);
+            try
+            {
+                var userId = GetUserId();
+                var result = await _service.GetUserBookingsAsync(userId);
+                return Ok(result);
+            }
+            catch (UnauthorizedException ex)
+            {
+                return Unauthorized(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving bookings for user");
+                throw;
+            }
         }
 
         /// <summary>
@@ -57,18 +81,30 @@ namespace TravelApp.Services.Booking.Controllers
         [Authorize]
         public async Task<ActionResult> Create(CreateBookingDto dto)
         {
-            var userId = GetUserId();
-            var userName = User.FindFirstValue(ClaimTypes.Name) ?? "";
-            var userEmail = User.FindFirstValue(ClaimTypes.Email) ?? "";
-
-            var result = await _service.CreateBookingAsync(dto, userId, userName, userEmail);
-
-            if (result.result == null)
+            try
             {
-                return BadRequest(result.errorMessage ?? "Invalid booking data");
-            }
+                var userId = GetUserId();
+                var userName = User.FindFirstValue(ClaimTypes.Name) ?? "";
+                var userEmail = User.FindFirstValue(ClaimTypes.Email) ?? "";
 
-            return Ok(result.result);
+                var result = await _service.CreateBookingAsync(dto, userId, userName, userEmail);
+
+                if (result.result == null)
+                {
+                    return BadRequest(result.errorMessage ?? "Invalid booking data");
+                }
+
+                return Ok(result.result);
+            }
+            catch (UnauthorizedException ex)
+            {
+                return Unauthorized(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating booking for user");
+                throw;
+            }
         }
 
 
@@ -96,9 +132,12 @@ namespace TravelApp.Services.Booking.Controllers
             var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             if (string.IsNullOrEmpty(userIdClaim))
-                throw new UnauthorizedAccessException("User ID not found in token");
+                throw new UnauthorizedException("User ID not found in token");
 
-            return int.Parse(userIdClaim);
+            if (!int.TryParse(userIdClaim, out int userId))
+                throw new UnauthorizedException("Invalid User ID format in token");
+
+            return userId;
         }
 
 

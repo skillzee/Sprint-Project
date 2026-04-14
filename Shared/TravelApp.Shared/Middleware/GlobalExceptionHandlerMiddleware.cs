@@ -52,14 +52,25 @@ public class GlobalExceptionHandlerMiddleware
     private static Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
         context.Response.ContentType = "application/json";
-        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+        
+        var statusCode = StatusCodes.Status500InternalServerError;
+        var title = "An internal server error occurred.";
+        var detail = exception.Message;
+
+        if (exception is TravelApp.Shared.Exceptions.AppException appEx)
+        {
+            statusCode = (int)appEx.StatusCode;
+            title = "Application Error";
+        }
+
+        context.Response.StatusCode = statusCode;
 
         var problemDetails = new ProblemDetails
         {
-            Status = context.Response.StatusCode,
-            Title = "An internal server error occurred.",
-            Detail = exception.Message, // In production, consider hiding detailed messages.
-            Type = "https://tools.ietf.org/html/rfc7231#section-6.6.1"
+            Status = statusCode,
+            Title = title,
+            Detail = detail,
+            Type = $"https://httpstatuses.com/{statusCode}"
         };
 
         var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };

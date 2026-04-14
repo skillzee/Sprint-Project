@@ -6,6 +6,7 @@ using TravelApp.Services.Auth.Models;
 using TravelApp.Services.Auth.Services;
 using TravelApp.Services.Auth.Helpers;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace TravelApp.Services.Auth.Tests.Services;
 
@@ -13,6 +14,7 @@ public class AuthServiceTests
 {
     private readonly Mock<IAuthRepository> _authRepoMock;
     private readonly Mock<IConfiguration> _configMock;
+    private readonly Mock<ILogger<AuthService>> _loggerMock;
     private readonly JwtHelper _jwtHelper;
     private readonly AuthService _authService;
 
@@ -21,12 +23,13 @@ public class AuthServiceTests
         _authRepoMock = new Mock<IAuthRepository>();
         
         _configMock = new Mock<IConfiguration>();
+        _loggerMock = new Mock<ILogger<AuthService>>();
         var mockSection = new Mock<IConfigurationSection>();
         mockSection.Setup(s => s["SecretKey"]).Returns("ThisIsAStrongSecretKeyForInternalTestsOnly");
         _configMock.Setup(c => c.GetSection("JwtSettings")).Returns(mockSection.Object);
         _jwtHelper = new JwtHelper(_configMock.Object);
 
-        _authService = new AuthService(_authRepoMock.Object, _jwtHelper, _configMock.Object);
+        _authService = new AuthService(_authRepoMock.Object, _jwtHelper, _configMock.Object, _loggerMock.Object);
     }
 
     [Fact]

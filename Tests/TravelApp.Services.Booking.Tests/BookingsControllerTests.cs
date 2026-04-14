@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using MassTransit;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -13,6 +13,7 @@ using TravelApp.Services.Booking.Data;
 using TravelApp.Services.Booking.DTOs;
 using TravelApp.Services.Booking.Interfaces;
 using TravelApp.Shared;
+using Microsoft.Extensions.Logging;
 
 
 // AAA methodology -> Arrangemnent -> Act -> Assret
@@ -23,12 +24,14 @@ namespace TravelApp.Services.Booking.Tests
     {
 
         private readonly Mock<IBookingService> _serviceMock;
+        private readonly Mock<ILogger<BookingsController>> _loggerMock;
         private readonly BookingsController _controller;
 
         public BookingsControllerTests()
         {
             _serviceMock = new Mock<IBookingService>();
-            _controller = new BookingsController(_serviceMock.Object);
+            _loggerMock = new Mock<ILogger<BookingsController>>();
+            _controller = new BookingsController(_serviceMock.Object, _loggerMock.Object);
 
             
 

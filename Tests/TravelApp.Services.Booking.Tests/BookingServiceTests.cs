@@ -6,6 +6,7 @@ using TravelApp.Services.Booking.Interfaces;
 using TravelApp.Services.Booking.Services;
 using TravelApp.Shared;
 using TravelApp.Services.Booking.Clients;
+using Microsoft.Extensions.Logging;
 
 namespace TravelApp.Services.Booking.Tests;
 
@@ -14,6 +15,7 @@ public class BookingServiceTests
     private readonly Mock<IBookingRepository> _repoMock;
     private readonly Mock<IPublishEndpoint> _busMock;
     private readonly Mock<IHotelClient> _hotelClientMock;
+    private readonly Mock<ILogger<BookingService>> _loggerMock;
     private readonly BookingService _service;
 
     public BookingServiceTests()
@@ -21,7 +23,8 @@ public class BookingServiceTests
         _repoMock = new Mock<IBookingRepository>();
         _busMock = new Mock<IPublishEndpoint>();
         _hotelClientMock = new Mock<IHotelClient>();
-        _service = new BookingService(_repoMock.Object, _busMock.Object, _hotelClientMock.Object);
+        _loggerMock = new Mock<ILogger<BookingService>>();
+        _service = new BookingService(_repoMock.Object, _busMock.Object, _hotelClientMock.Object, _loggerMock.Object);
     }
 
     [Fact]

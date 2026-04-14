@@ -4,18 +4,21 @@ using Microsoft.AspNetCore.Mvc;
 using TravelApp.Services.Hotel.Controllers;
 using TravelApp.Services.Hotel.DTOs;
 using TravelApp.Services.Hotel.Interfaces;
+using Microsoft.Extensions.Logging;
 
 namespace TravelApp.Services.Hotel.Tests;
 
 public class HotelsControllerTests
 {
     private readonly Mock<IHotelService> _serviceMock;
+    private readonly Mock<ILogger<HotelsController>> _loggerMock;
     private readonly HotelsController _controller;
 
     public HotelsControllerTests()
     {
         _serviceMock = new Mock<IHotelService>();
-        _controller = new HotelsController(_serviceMock.Object);
+        _loggerMock = new Mock<ILogger<HotelsController>>();
+        _controller = new HotelsController(_serviceMock.Object, _loggerMock.Object);
     }
 
     [Fact]

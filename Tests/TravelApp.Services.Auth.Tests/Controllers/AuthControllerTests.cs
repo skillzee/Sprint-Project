@@ -4,18 +4,21 @@ using FluentAssertions;
 using TravelApp.Services.Auth.Controllers;
 using TravelApp.Services.Auth.DTOs;
 using TravelApp.Services.Auth.Interfaces;
+using Microsoft.Extensions.Logging;
 
 namespace TravelApp.Services.Auth.Tests.Controllers;
 
 public class AuthControllerTests
 {
     private readonly Mock<IAuthService> _authServiceMock;
+    private readonly Mock<ILogger<AuthController>> _loggerMock;
     private readonly AuthController _controller;
 
     public AuthControllerTests()
     {
         _authServiceMock = new Mock<IAuthService>();
-        _controller = new AuthController(_authServiceMock.Object);
+        _loggerMock = new Mock<ILogger<AuthController>>();
+        _controller = new AuthController(_authServiceMock.Object, _loggerMock.Object);
     }
 
     [Fact]
