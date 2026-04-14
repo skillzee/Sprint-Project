@@ -24,7 +24,6 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         );
       }
 
-      // Here you could trigger a Toast message or Notification service
       // For now, we log to console and re-throw the error
       return throwError(() => new Error(errorMessage));
     })
